@@ -70,7 +70,9 @@ class estimate_bc_jac {
     };
   private:
     BC& bc_;
-    static constexpr Real sqrt_EPS = sqrt(boost::math::tools::epsilon<Real>());
+    // static constexpr Real sqrt_EPS = sqrt(boost::math::tools::epsilon<Real>());
+    // static constexpr Real sqrt_EPS = sqrt(std::numeric_limits<Real>::epsilon());
+    const Real sqrt_EPS = sqrt(std::numeric_limits<Real>::epsilon());
 };
 
 // Same thing but with no unknown parameters
@@ -125,7 +127,9 @@ class estimate_bc_jac<BC, Real, n, 0> {
     };
   private:
     BC& bc_;
-    static constexpr Real sqrt_EPS = sqrt(boost::math::tools::epsilon<Real>());
+    // static constexpr Real sqrt_EPS = sqrt(boost::math::tools::epsilon<Real>());
+    // static constexpr Real sqrt_EPS = sqrt(std::numeric_limits<Real>::epsilon());
+    const Real sqrt_EPS = sqrt(std::numeric_limits<Real>::epsilon());
 };
 
 } // namespace detail

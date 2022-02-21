@@ -9,6 +9,10 @@
 #define COLLOCATION_VERBOSITY 0
 #endif
 
+#ifndef COLLOCATION_SOLVER
+#define COLLOCATION_SOLVER 0
+#endif
+
 #include <boost/math/tools/precision.hpp>
 #include <Eigen/Dense>
 #include <cmath>
@@ -112,8 +116,11 @@ class Generic_Solver {
 
   private:
     Method m_method;
-    // NewtonRaphson<Method, Singular> m_solver;
+#if COLLOCATION_SOLVER == 0
     PowellHybrid<Method, Singular> m_solver;
+#else
+    NewtonRaphson<Method, Singular> m_solver;
+#endif
     static constexpr Scalar EPS = boost::math::tools::epsilon<Scalar>();
     static constexpr int m_max_iterations = 10; // Max number of iterations of the main loop
     int m_nodes_added;
@@ -142,12 +149,18 @@ BVP_Result<Method> Generic_Solver<Method, Singular>::solve(Scalar tol, const Sca
   int iteration;
   for (iteration = 0; iteration < m_max_iterations; ++iteration) {
 
+#if COLLOCATION_SOLVER == 0
     PowellHybridSolverSpace::Status info;
-    // NewtonRaphsonSolverSpace::Status info;
+#else
+    NewtonRaphsonSolverSpace::Status info;
+#endif
     info = m_solver.solve();
 
+#if COLLOCATION_SOLVER == 0
     if (info == PowellHybridSolverSpace::SingularJacobian) {
-    // if (info == NewtonRaphsonSolverSpace::SingularJacobian) {
+#else
+    if (info == NewtonRaphsonSolverSpace::SingularJacobian) {
+#endif
       status = BVPSolverSpace::SingularJacobian;
       iteration++;
       break;
@@ -155,17 +168,11 @@ BVP_Result<Method> Generic_Solver<Method, Singular>::solve(Scalar tol, const Sca
 
     max_bc_res = m_method.bc_residues.abs().maxCoeff();
     m_method.calculate_residuals();
-    // max_rms_res = m_method.rms_residuals.maxCoeff();
     Scalar new_max_res = m_method.residuals.maxCoeff();
     if (max_res < new_max_res) {
       status = BVPSolverSpace::NotMakingProgressResiduals;
       max_res = new_max_res;
       ++iteration;
-      // Testing
-      Index bad_idx;
-      m_method.residuals.maxCoeff(&bad_idx);
-      std::cout << m_method.x.template segment<2>(bad_idx).transpose() << std::endl;
-      std::cout << m_method.y.template block<2,2>(0, bad_idx) << std::endl;
       break;
     }
     max_res = new_max_res;

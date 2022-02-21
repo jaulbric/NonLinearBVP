@@ -89,7 +89,9 @@ class estimate_fun_jac<F, _Scalar, _RowsAtCompileTime, _ParamsAtCompileTime, tru
     const Scalar m_a;
     const Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime> m_S;
     const Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime> m_D;
-    static constexpr Scalar sqrt_EPS = sqrt(boost::math::tools::epsilon<Scalar>());
+    // static constexpr Scalar sqrt_EPS = sqrt(boost::math::tools::epsilon<Scalar>());
+    // static constexpr Scalar sqrt_EPS = sqrt(std::numeric_limits<Scalar>::epsilon());
+    const Scalar sqrt_EPS = sqrt(std::numeric_limits<Scalar>::epsilon());
 };
 
 template <class F, typename _Scalar, Index _RowsAtCompileTime, Index _ParamsAtCompileTime>
@@ -156,7 +158,9 @@ class estimate_fun_jac<F, _Scalar, _RowsAtCompileTime, _ParamsAtCompileTime, fal
 
   private:
     F& m_fun;
-    static constexpr Scalar sqrt_EPS = sqrt(boost::math::tools::epsilon<Scalar>());
+    // static constexpr Scalar sqrt_EPS = sqrt(boost::math::tools::epsilon<Scalar>());
+    // static constexpr Scalar sqrt_EPS = sqrt(std::numeric_limits<Scalar>::epsilon());
+    const Scalar sqrt_EPS = sqrt(std::numeric_limits<Scalar>::epsilon());
 };
 
 template <class F, typename _Scalar, Index _RowsAtCompileTime>
@@ -223,7 +227,9 @@ class estimate_fun_jac<F, _Scalar, _RowsAtCompileTime, 0, true> {
     const Scalar m_a;
     const Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime> m_S;
     const Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime> m_D;
-    static constexpr Scalar sqrt_EPS = sqrt(boost::math::tools::epsilon<Scalar>());
+    // static constexpr Scalar sqrt_EPS = sqrt(boost::math::tools::epsilon<Scalar>());
+    // static constexpr Scalar sqrt_EPS = sqrt(std::numeric_limits<Scalar>::epsilon());
+    const Scalar sqrt_EPS = sqrt(std::numeric_limits<Scalar>::epsilon());
 };
 
 template <class F, typename _Scalar, Index _RowsAtCompileTime>
@@ -273,7 +279,9 @@ class estimate_fun_jac<F, _Scalar, _RowsAtCompileTime, 0, false> {
 
   private:
     F& m_fun;
-    static constexpr Scalar sqrt_EPS = sqrt(boost::math::tools::epsilon<Scalar>());
+    // static constexpr Scalar sqrt_EPS = sqrt(boost::math::tools::epsilon<Scalar>());
+    // static constexpr Scalar sqrt_EPS = sqrt(std::numeric_limits<Scalar>::epsilon());
+    const Scalar sqrt_EPS = sqrt(std::numeric_limits<Scalar>::epsilon());
 };
 
 } // namespace detail
