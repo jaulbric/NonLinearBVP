@@ -44,8 +44,6 @@ using boost::math::constants::tenth;
 using boost::math::constants::twelfth;
 using boost::math::constants::MIRK6_alpha;
 using boost::math::constants::MIRK6_beta1;
-using boost::math::constants::MIRK6_beta2;
-using boost::math::constants::MIRK6_beta3;
 using boost::math::constants::MIRK6_A31;
 using boost::math::constants::MIRK6_A33;
 using boost::math::constants::MIRK6_B31;
@@ -60,11 +58,8 @@ using boost::math::constants::MIRK6_C53;
 using boost::math::constants::MIRK6_D51;
 using boost::math::constants::MIRK6_A5p1;
 using boost::math::constants::MIRK6_A5p2;
-using boost::math::constants::MIRK6_B5p1;
 using boost::math::constants::MIRK6_B5p2;
 using boost::math::constants::MIRK6_C5p2;
-using boost::math::constants::MIRK6_C5p3;
-using boost::math::constants::MIRK6_D5p1;
 using boost::math::constants::MIRK6R_w1;
 using boost::math::constants::MIRK6R_w2;
 using boost::math::constants::MIRK6R_w3;
@@ -112,15 +107,9 @@ using boost::math::constants::MIRK6J_a7;
 using boost::math::constants::MIRK6J_a8;
 using boost::math::constants::MIRK6J_a9;
 using boost::math::constants::MIRK6J_a10;
-using boost::math::constants::MIRK6J_a11;
 using boost::math::constants::MIRK6J_a12;
 using boost::math::constants::MIRK6J_a13;
-using boost::math::constants::MIRK6J_a14;
-using boost::math::constants::MIRK6J_a15;
-using boost::math::constants::MIRK6J_a17;
-using boost::math::constants::MIRK6J_a18;
-using boost::math::constants::MIRK6J_a19;
-using boost::math::constants::MIRK6J_a20;
+
 
 template <typename _Scalar, Index _RowsAtCompileTime, Index _ColsAtCompileTime, Index _ParamsAtCompileTime, typename F, typename BC, typename FJ, typename BCJ>
 class MIRK6 : public MIRK<_Scalar, _RowsAtCompileTime, _ColsAtCompileTime, _ParamsAtCompileTime, F, BC, FJ, BCJ> {
@@ -247,34 +236,22 @@ public:
       f1 = m_fun(m_x_internal1, y1);
       f2 = m_fun(m_x_internal2, y2);
       f3 = m_fun(m_x_internal3, y3);
-
       /* bootstrap the internal points */
       for (Index idx = 0; idx < m_cols - 1; ++idx) {
         y1.col(idx) = MIRK6_A51<Scalar>() * y.col(idx + 1) + MIRK6_A53<Scalar>() * y.col(idx) - m_h(idx) * (MIRK6_B51<Scalar>() * f.col(idx + 1) - MIRK6_B53<Scalar>() * f.col(idx) - MIRK6_C53<Scalar>() * f1.col(idx) + MIRK6_D51<Scalar>() * f2.col(idx));
-        y2.col(idx) = half<Scalar>() * (y.col(idx + 1) + y.col(idx)) - m_h(idx) * (MIRK6_B52<Scalar>() * (f.col(idx + 1) - f.col(idx)) + MIRK6_C52<Scalar>() * (f3.col(idx) - f1.col(idx)));
+        // y2.col(idx) = half<Scalar>() * (y.col(idx + 1) + y.col(idx)) - m_h(idx) * (MIRK6_B52<Scalar>() * (f.col(idx + 1) - f.col(idx)) + MIRK6_C52<Scalar>() * (f3.col(idx) - f1.col(idx)));
         y3.col(idx) = MIRK6_A53<Scalar>() * y.col(idx + 1) + MIRK6_A51<Scalar>() * y.col(idx) - m_h(idx) * (MIRK6_B53<Scalar>() * f.col(idx + 1) - MIRK6_B51<Scalar>() * f.col(idx) + MIRK6_C53<Scalar>() * f3.col(idx) - MIRK6_D51<Scalar>() * f2.col(idx));
       }
       f1 = m_fun(m_x_internal1, y1);
-      f2 = m_fun(m_x_internal2, y2);
+      // f2 = m_fun(m_x_internal2, y2);
       f3 = m_fun(m_x_internal3, y3);
-
-      /* bootstrap the internal points again */
-      for (Index idx = 0; idx < m_cols - 1; ++idx) {
-        y1.col(idx) = MIRK6_A51<Scalar>() * y.col(idx + 1) + MIRK6_A53<Scalar>() * y.col(idx) - m_h(idx) * (MIRK6_B51<Scalar>() * f.col(idx + 1) - MIRK6_B53<Scalar>() * f.col(idx) - MIRK6_C53<Scalar>() * f1.col(idx) + MIRK6_D51<Scalar>() * f2.col(idx));
-        y2.col(idx) = half<Scalar>() * (y.col(idx + 1) + y.col(idx)) - m_h(idx) * (MIRK6_B52<Scalar>() * (f.col(idx + 1) - f.col(idx)) + MIRK6_C52<Scalar>() * (f3.col(idx) - f1.col(idx)));
-        y3.col(idx) = MIRK6_A53<Scalar>() * y.col(idx + 1) + MIRK6_A51<Scalar>() * y.col(idx) - m_h(idx) * (MIRK6_B53<Scalar>() * f.col(idx + 1) - MIRK6_B51<Scalar>() * f.col(idx) + MIRK6_C53<Scalar>() * f3.col(idx) - MIRK6_D51<Scalar>() * f2.col(idx));
-      }
-      f1 = m_fun(m_x_internal1, y1);
-      f2 = m_fun(m_x_internal2, y2);
-      f3 = m_fun(m_x_internal3, y3);
-
       /* calculate residues */
       for (Index idx = 0; idx < m_cols - 1; ++idx) {
         if constexpr (RowsAtCompileTime == Dynamic) {
-          residues.segment(m_rows * idx, m_rows).array() = y.col(idx + 1) - y.col(idx) - m_h(idx) * (MIRK6_beta1<Scalar>() * (f.col(idx + 1) + f.col(idx)) + MIRK6_beta2<Scalar>() * (f1.col(idx) + f3.col(idx)) + MIRK6_beta2<Scalar>() * f2.col(idx));
+          residues.segment(m_rows * idx, m_rows).array() = y.col(idx + 1) - y.col(idx) - m_h(idx) * (twelfth<Scalar>() * (f.col(idx + 1) + f.col(idx)) + MIRK6_beta1<Scalar>() * (f1.col(idx) + f3.col(idx)));
         }
         else {
-          residues.template segment<RowsAtCompileTime>(m_rows * idx).array() = y.col(idx + 1) - y.col(idx) - m_h(idx) * (MIRK6_beta1<Scalar>() * (f.col(idx + 1) + f.col(idx)) + MIRK6_beta2<Scalar>() * (f1.col(idx) + f3.col(idx)) + MIRK6_beta3<Scalar>() * f2.col(idx));
+          residues.template segment<RowsAtCompileTime>(m_rows * idx).array() = y.col(idx + 1) - y.col(idx) - m_h(idx) * (twelfth<Scalar>() * (f.col(idx + 1) + f.col(idx)) + MIRK6_beta1<Scalar>() * (f1.col(idx) + f3.col(idx)));
         }
       }
       if constexpr (BCsAtCompileTime == Dynamic) {
@@ -296,34 +273,22 @@ public:
       f1 = m_fun(m_x_internal1, y1, p);
       f2 = m_fun(m_x_internal2, y2, p);
       f3 = m_fun(m_x_internal3, y3, p);
-
-      /* bootstrap the internal points */
+      /* bootstrap the quarter points */
       for (Index idx = 0; idx < m_cols - 1; ++idx) {
         y1.col(idx) = MIRK6_A51<Scalar>() * y.col(idx + 1) + MIRK6_A53<Scalar>() * y.col(idx) - m_h(idx) * (MIRK6_B51<Scalar>() * f.col(idx + 1) - MIRK6_B53<Scalar>() * f.col(idx) - MIRK6_C53<Scalar>() * f1.col(idx) + MIRK6_D51<Scalar>() * f2.col(idx));
-        y2.col(idx) = half<Scalar>() * (y.col(idx + 1) + y.col(idx)) - m_h(idx) * (MIRK6_B52<Scalar>() * (f.col(idx + 1) - f.col(idx)) + MIRK6_C52<Scalar>() * (f3.col(idx) - f1.col(idx)));
+        // y2.col(idx) = half<Scalar>() * (y.col(idx + 1) + y.col(idx)) - m_h(idx) * (MIRK6_B52<Scalar>() * (f.col(idx + 1) - f.col(idx)) + MIRK6_C52<Scalar>() * (f3.col(idx) - f1.col(idx)));
         y3.col(idx) = MIRK6_A53<Scalar>() * y.col(idx + 1) + MIRK6_A51<Scalar>() * y.col(idx) - m_h(idx) * (MIRK6_B53<Scalar>() * f.col(idx + 1) - MIRK6_B51<Scalar>() * f.col(idx) + MIRK6_C53<Scalar>() * f3.col(idx) - MIRK6_D51<Scalar>() * f2.col(idx));
       }
       f1 = m_fun(m_x_internal1, y1, p);
-      f2 = m_fun(m_x_internal2, y2, p);
+      // f2 = m_fun(m_x_internal2, y2, p);
       f3 = m_fun(m_x_internal3, y3, p);
-
-      /* bootstrap the internal points again */
-      for (Index idx = 0; idx < m_cols - 1; ++idx) {
-        y1.col(idx) = MIRK6_A51<Scalar>() * y.col(idx + 1) + MIRK6_A53<Scalar>() * y.col(idx) - m_h(idx) * (MIRK6_B51<Scalar>() * f.col(idx + 1) - MIRK6_B53<Scalar>() * f.col(idx) - MIRK6_C53<Scalar>() * f1.col(idx) + MIRK6_D51<Scalar>() * f2.col(idx));
-        y2.col(idx) = half<Scalar>() * (y.col(idx + 1) + y.col(idx)) - m_h(idx) * (MIRK6_B52<Scalar>() * (f.col(idx + 1) - f.col(idx)) + MIRK6_C52<Scalar>() * (f3.col(idx) - f1.col(idx)));
-        y3.col(idx) = MIRK6_A53<Scalar>() * y.col(idx + 1) + MIRK6_A51<Scalar>() * y.col(idx) - m_h(idx) * (MIRK6_B53<Scalar>() * f.col(idx + 1) - MIRK6_B51<Scalar>() * f.col(idx) + MIRK6_C53<Scalar>() * f3.col(idx) - MIRK6_D51<Scalar>() * f2.col(idx));
-      }
-      f1 = m_fun(m_x_internal1, y1, p);
-      f2 = m_fun(m_x_internal2, y2, p);
-      f3 = m_fun(m_x_internal3, y3, p);
-
       /* calculate residues */
       for (Index idx = 0; idx < m_cols - 1; ++idx) {
         if constexpr (RowsAtCompileTime == Dynamic) {
-          residues.segment(m_rows * idx, m_rows).array() = y.col(idx + 1) - y.col(idx) - m_h(idx) * (MIRK6_beta1<Scalar>() * (f.col(idx + 1) + f.col(idx)) + MIRK6_beta2<Scalar>() * (f1.col(idx) + f3.col(idx)) + MIRK6_beta3<Scalar>() * f2.col(idx));
+          residues.segment(m_rows * idx, m_rows).array() = y.col(idx + 1) - y.col(idx) - m_h(idx) * (twelfth<Scalar>() * (f.col(idx + 1) + f.col(idx)) + MIRK6_beta1<Scalar>() * (f1.col(idx) + f3.col(idx)));
         }
         else {
-          residues.template segment<RowsAtCompileTime>(m_rows * idx).array() = y.col(idx + 1) - y.col(idx) - m_h(idx) * (MIRK6_beta1<Scalar>() * (f.col(idx + 1) + f.col(idx)) + MIRK6_beta2<Scalar>() * (f1.col(idx) + f3.col(idx)) + MIRK6_beta3<Scalar>() * f2.col(idx));
+          residues.template segment<RowsAtCompileTime>(m_rows * idx).array() = y.col(idx + 1) - y.col(idx) - m_h(idx) * (twelfth<Scalar>() * (f.col(idx + 1) + f.col(idx)) + MIRK6_beta1<Scalar>() * (f1.col(idx) + f3.col(idx)));
         }
       }
       if constexpr (BCsAtCompileTime == Dynamic) {
@@ -350,12 +315,12 @@ public:
     Array<Scalar, IntervalsAtCompileTime, 1> result(m_cols - 1);
     for (Index idx = 0; idx < m_cols - 1; ++idx) {
       Scalar hinv = 1 / m_h(idx);
-      auto y1prime = MIRK6_A5p1<Scalar>() * (m_y.col(idx + 1) - m_y.col(idx)) * hinv - MIRK6_B5p1<Scalar>() * (m_f.col(idx + 1) + m_f.col(idx)) - sixth<Scalar>() * m_f_internal3.col(idx) - MIRK6_C5p3<Scalar>() * m_f_internal1.col(idx) - MIRK6_D5p1<Scalar>() * m_f_internal2.col(idx);
-      auto y2prime = MIRK6_A5p2<Scalar>() * (m_y.col(idx + 1) - m_y.col(idx)) * hinv - MIRK6_B5p2<Scalar>() * (m_f.col(idx + 1) + m_f.col(idx)) - MIRK6_C5p2<Scalar>() * (m_f_internal3.col(idx) + m_f_internal1.col(idx)) - third<Scalar>() * m_f_internal2.col(idx);
-      auto y3prime = MIRK6_A5p1<Scalar>() * (m_y.col(idx + 1) - m_y.col(idx)) * hinv - MIRK6_B5p1<Scalar>() * (m_f.col(idx + 1) + m_f.col(idx)) + MIRK6_C5p3<Scalar>() * m_f_internal3.col(idx) - sixth<Scalar>() * m_f_internal1.col(idx) - MIRK6_D5p1<Scalar>() * m_f_internal2.col(idx);
-      Scalar r1 = m_h(idx) * ((y1prime - m_f_internal1.col(idx)) / (1 + m_y_internal1.col(idx).abs())).matrix().stableNorm();
-      Scalar r2 = m_h(idx) * ((y2prime - m_f_internal2.col(idx)) / (1 + m_y_internal2.col(idx).abs())).matrix().stableNorm();
-      Scalar r3 = m_h(idx) * ((y3prime - m_f_internal3.col(idx)) / (1 + m_y_internal3.col(idx).abs())).matrix().stableNorm();
+      auto y1prime = MIRK6_A5p1<Scalar>() * (m_y.col(idx + 1) - m_y.col(idx)) * hinv - tenth<Scalar>() * (m_f.col(idx + 1) + m_f.col(idx)) - half<Scalar>() * (m_f_internal3.col(idx) - m_f_internal1.col(idx));
+      auto y2prime = MIRK6_A5p2<Scalar>() * (m_y.col(idx + 1) - m_y.col(idx)) * hinv - MIRK6_B5p2<Scalar>() * (m_f.col(idx + 1) + m_f.col(idx)) - MIRK6_C5p2<Scalar>() * (m_f_internal3.col(idx) + m_f_internal1.col(idx)) + m_f_internal2.col(idx);
+      auto y3prime = MIRK6_A5p1<Scalar>() * (m_y.col(idx + 1) - m_y.col(idx)) * hinv - tenth<Scalar>() * (m_f.col(idx + 1) + m_f.col(idx)) + half<Scalar>() * (m_f_internal3.col(idx) - m_f_internal1.col(idx));
+      Scalar r1 = MIRK6_beta1<Scalar>() * m_h(idx) * ((y1prime - m_f_internal1.col(idx)) / (1 + m_y_internal1.col(idx).abs())).matrix().stableNorm();
+      Scalar r2 = MIRK6_beta1<Scalar>() * m_h(idx) * ((y2prime - m_f_internal2.col(idx)) / (1 + m_y_internal2.col(idx).abs())).matrix().stableNorm();
+      Scalar r3 = MIRK6_beta1<Scalar>() * m_h(idx) * ((y3prime - m_f_internal3.col(idx)) / (1 + m_y_internal3.col(idx).abs())).matrix().stableNorm();
       result(idx) = std::max({r1, r2, r3});
     }
     return result;
@@ -419,25 +384,7 @@ private:
       m_f_internal2 = m_fun(m_x_internal2, m_y_internal2, this->m_p);
       m_f_internal3 = m_fun(m_x_internal3, m_y_internal3, this->m_p);
     }
-
     /* boostrap the internal points to higher order */
-    for (Index idx = 0; idx < m_cols - 1; ++idx) {
-      m_y_internal1.col(idx) = MIRK6_A51<Scalar>() * m_y.col(idx + 1) + MIRK6_A53<Scalar>() * m_y.col(idx) - m_h(idx) * (MIRK6_B51<Scalar>() * m_f.col(idx + 1) - MIRK6_B53<Scalar>() * m_f.col(idx) - MIRK6_C53<Scalar>() * m_f_internal1.col(idx) + MIRK6_D51<Scalar>() * m_f_internal2.col(idx));
-      m_y_internal2.col(idx) = half<Scalar>() * (m_y.col(idx + 1) + m_y.col(idx)) - m_h(idx) * (MIRK6_B52<Scalar>() * (m_f.col(idx + 1) - m_f.col(idx)) + MIRK6_C52<Scalar>() * (m_f_internal3.col(idx) - m_f_internal1.col(idx)));
-      m_y_internal3.col(idx) = MIRK6_A53<Scalar>() * m_y.col(idx + 1) + MIRK6_A51<Scalar>() * m_y.col(idx) - m_h(idx) * (MIRK6_B53<Scalar>() * m_f.col(idx + 1) - MIRK6_B51<Scalar>() * m_f.col(idx) + MIRK6_C53<Scalar>() * m_f_internal3.col(idx) - MIRK6_D51<Scalar>() * m_f_internal2.col(idx));
-    }
-    if constexpr (ParamsAtCompileTime == 0) {
-      m_f_internal1 = m_fun(m_x_internal1, m_y_internal1);
-      m_f_internal2 = m_fun(m_x_internal2, m_y_internal2);
-      m_f_internal3 = m_fun(m_x_internal3, m_y_internal3);
-    }
-    else {
-      m_f_internal1 = m_fun(m_x_internal1, m_y_internal1, this->m_p);
-      m_f_internal2 = m_fun(m_x_internal2, m_y_internal2, this->m_p);
-      m_f_internal3 = m_fun(m_x_internal3, m_y_internal3, this->m_p);
-    }
-
-    /* boostrap the internal points again for superconvergence */
     for (Index idx = 0; idx < m_cols - 1; ++idx) {
       m_y_internal1.col(idx) = MIRK6_A51<Scalar>() * m_y.col(idx + 1) + MIRK6_A53<Scalar>() * m_y.col(idx) - m_h(idx) * (MIRK6_B51<Scalar>() * m_f.col(idx + 1) - MIRK6_B53<Scalar>() * m_f.col(idx) - MIRK6_C53<Scalar>() * m_f_internal1.col(idx) + MIRK6_D51<Scalar>() * m_f_internal2.col(idx));
       m_y_internal2.col(idx) = half<Scalar>() * (m_y.col(idx + 1) + m_y.col(idx)) - m_h(idx) * (MIRK6_B52<Scalar>() * (m_f.col(idx + 1) - m_f.col(idx)) + MIRK6_C52<Scalar>() * (m_f_internal3.col(idx) - m_f_internal1.col(idx)));
@@ -458,10 +405,10 @@ private:
   void calculate_residues() {
     for (Index idx = 0; idx < m_cols - 1; ++idx) {
       if constexpr (RowsAtCompileTime == Dynamic) {
-        m_residues.segment(m_rows * idx, m_rows).array() = m_y.col(idx + 1) - m_y.col(idx) - m_h(idx) * (MIRK6_beta1<Scalar>() * (m_f.col(idx + 1) + m_f.col(idx)) + MIRK6_beta2<Scalar>() * (m_f_internal1.col(idx) + m_f_internal3.col(idx)) + MIRK6_beta3<Scalar>() * m_f_internal2.col(idx));
+        m_residues.segment(m_rows * idx, m_rows).array() = m_y.col(idx + 1) - m_y.col(idx) - m_h(idx) * (twelfth<Scalar>() * (m_f.col(idx + 1) + m_f.col(idx)) + MIRK6_beta1<Scalar>() * (m_f_internal1.col(idx) + m_f_internal3.col(idx)));
       }
       else {
-        m_residues.template segment<RowsAtCompileTime>(m_rows * idx).array() = m_y.col(idx + 1) - m_y.col(idx) - m_h(idx) * (MIRK6_beta1<Scalar>() * (m_f.col(idx + 1) + m_f.col(idx)) + MIRK6_beta2<Scalar>() * (m_f_internal1.col(idx) + m_f_internal3.col(idx)) + MIRK6_beta3<Scalar>() * m_f_internal2.col(idx));
+        m_residues.template segment<RowsAtCompileTime>(m_rows * idx).array() = m_y.col(idx + 1) - m_y.col(idx) - m_h(idx) * (twelfth<Scalar>() * (m_f.col(idx + 1) + m_f.col(idx)) + MIRK6_beta1<Scalar>() * (m_f_internal1.col(idx) + m_f_internal3.col(idx)));
       }
     }
     if constexpr (BCsAtCompileTime == Dynamic) {
@@ -484,20 +431,16 @@ private:
 
   // Interpolation
   Scalar A(Scalar w) const {
-    Scalar temp = w * w;
-    return w * temp * (10 - 15 * w + 6 * temp);
+    return w * w * w * (10 - 15 * w + 6 * w * w);
   }
   Scalar B(Scalar w) const {
-    Scalar temp = w * w;
-    return half<Scalar>() * temp * (1 - w) * (1 - 4 * w + 5 * temp);
+    return half<Scalar>() * w * w * (1 - w) * (1 - 2 * w + 3 * w * w);
   }
   Scalar C(Scalar w) const {
-    Scalar temp = 1 - w;
-    return sixth<Scalar>() * 49 * w * w * temp * temp * (w - half<Scalar>() + MIRK6_alpha<Scalar>());
+    return half<Scalar>() * 25 * w * w * (1 - w) * (1 - w) * (w - half<Scalar>() + MIRK6_alpha<Scalar>());
   }
   Scalar D(Scalar w) const {
-    Scalar temp = 1 - w;
-    return third<Scalar>() * 8 * w * w * temp * temp * (1 - 2 * w);
+    return 8 * w * w * (1 - w) * (1 - w) * (1 - 2 * w);
   }
 };
 
@@ -545,10 +488,10 @@ void MIRK6<Scalar, RowsAtCompileTime, ColsAtCompileTime, ParamsAtCompileTime, F,
     y3.col(idx) = MIRK6R_A53<Scalar>() * m_y.col(idx + 1) + MIRK6R_A52<Scalar>() * m_y.col(idx) - m_h(idx) * (MIRK6R_B53<Scalar>() * m_f.col(idx + 1) - MIRK6R_B52<Scalar>() * m_f.col(idx) + MIRK6R_C53<Scalar>() * m_f_internal3.col(idx) - MIRK6R_C52<Scalar>() * m_f_internal1.col(idx) - MIRK6R_D52<Scalar>() * m_f_internal2.col(idx));
     y4.col(idx) = MIRK6R_A54<Scalar>() * m_y.col(idx + 1) + MIRK6R_A51<Scalar>() * m_y.col(idx) - m_h(idx) * (MIRK6R_B54<Scalar>() * m_f.col(idx + 1) - MIRK6R_B51<Scalar>() * m_f.col(idx) + MIRK6R_C54<Scalar>() * m_f_internal3.col(idx) - MIRK6R_C51<Scalar>() * m_f_internal1.col(idx) - MIRK6R_D51<Scalar>() * m_f_internal2.col(idx));
 
-    y1prime.col(idx) = MIRK6R_A5p1<Scalar>() * (m_y.col(idx + 1) - m_y.col(idx)) * hinv - MIRK6R_B5p1<Scalar>() * m_f.col(idx + 1) - MIRK6R_B5p4<Scalar>() * m_f.col(idx) - MIRK6R_C5p1<Scalar>() * m_f_internal3.col(idx) - MIRK6R_C5p4<Scalar>() * m_f_internal1.col(idx) - MIRK6R_D5p1<Scalar>() * m_f_internal2.col(idx);
-    y2prime.col(idx) = MIRK6R_A5p2<Scalar>() * (m_y.col(idx + 1) - m_y.col(idx)) * hinv - MIRK6R_B5p2<Scalar>() * m_f.col(idx + 1) - MIRK6R_B5p3<Scalar>() * m_f.col(idx) - MIRK6R_C5p2<Scalar>() * m_f_internal3.col(idx) - MIRK6R_C5p3<Scalar>() * m_f_internal1.col(idx) - MIRK6R_D5p2<Scalar>() * m_f_internal2.col(idx);
-    y3prime.col(idx) = MIRK6R_A5p2<Scalar>() * (m_y.col(idx + 1) - m_y.col(idx)) * hinv - MIRK6R_B5p3<Scalar>() * m_f.col(idx + 1) - MIRK6R_B5p2<Scalar>() * m_f.col(idx) - MIRK6R_C5p3<Scalar>() * m_f_internal3.col(idx) - MIRK6R_C5p2<Scalar>() * m_f_internal1.col(idx) - MIRK6R_D5p2<Scalar>() * m_f_internal2.col(idx);
-    y4prime.col(idx) = MIRK6R_A5p1<Scalar>() * (m_y.col(idx + 1) - m_y.col(idx)) * hinv - MIRK6R_B5p4<Scalar>() * m_f.col(idx + 1) - MIRK6R_B5p1<Scalar>() * m_f.col(idx) - MIRK6R_C5p4<Scalar>() * m_f_internal3.col(idx) - MIRK6R_C5p1<Scalar>() * m_f_internal1.col(idx) - MIRK6R_D5p1<Scalar>() * m_f_internal2.col(idx);
+    y1prime.col(idx) = MIRK6R_A5p1<Scalar>() * (m_y.col(idx + 1) - m_y.col(idx)) * hinv - (MIRK6R_B5p1<Scalar>() * m_f.col(idx + 1) + MIRK6R_B5p4<Scalar>() * m_f.col(idx) + MIRK6R_C5p1<Scalar>() * m_f_internal3.col(idx) + MIRK6R_C5p4<Scalar>() * m_f_internal1.col(idx) + MIRK6R_D5p1<Scalar>() * m_f_internal2.col(idx));
+    y2prime.col(idx) = MIRK6R_A5p2<Scalar>() * (m_y.col(idx + 1) - m_y.col(idx)) * hinv - (MIRK6R_B5p2<Scalar>() * m_f.col(idx + 1) + MIRK6R_B5p3<Scalar>() * m_f.col(idx) + MIRK6R_C5p2<Scalar>() * m_f_internal3.col(idx) + MIRK6R_C5p3<Scalar>() * m_f_internal1.col(idx) + MIRK6R_D5p2<Scalar>() * m_f_internal2.col(idx));
+    y3prime.col(idx) = MIRK6R_A5p2<Scalar>() * (m_y.col(idx + 1) - m_y.col(idx)) * hinv - (MIRK6R_B5p3<Scalar>() * m_f.col(idx + 1) + MIRK6R_B5p2<Scalar>() * m_f.col(idx) + MIRK6R_C5p3<Scalar>() * m_f_internal3.col(idx) + MIRK6R_C5p2<Scalar>() * m_f_internal1.col(idx) + MIRK6R_D5p2<Scalar>() * m_f_internal2.col(idx));
+    y4prime.col(idx) = MIRK6R_A5p1<Scalar>() * (m_y.col(idx + 1) - m_y.col(idx)) * hinv - (MIRK6R_B5p4<Scalar>() * m_f.col(idx + 1) + MIRK6R_B5p1<Scalar>() * m_f.col(idx) + MIRK6R_C5p4<Scalar>() * m_f_internal3.col(idx) + MIRK6R_C5p1<Scalar>() * m_f_internal1.col(idx) + MIRK6R_D5p1<Scalar>() * m_f_internal2.col(idx));
   }
   if constexpr (ParamsAtCompileTime == 0) {
     f1 = m_fun(x1, y1);
@@ -587,6 +530,8 @@ void MIRK6<Scalar, RowsAtCompileTime, ColsAtCompileTime, ParamsAtCompileTime, F,
     std::tie(dbc_dya, dbc_dyb) = m_bc_jac(m_y.col(0), m_y.col(m_cols - 1));
 
     for (Index idx = 0; idx < m_cols - 1; ++idx) {
+      Scalar h2 = m_h(idx) * m_h(idx);
+      Scalar h3 = m_h(idx) * h2;
       Map<const Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> Ji(df_dy.data() + m_rows * m_rows * idx, m_rows, m_rows);
       Map<const Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> Jip1(df_dy.data() + m_rows * m_rows * (idx + 1), m_rows, m_rows);
       Map<const Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> J1(df_dy_internal1.data() + m_rows * m_rows * idx, m_rows, m_rows);
@@ -596,9 +541,9 @@ void MIRK6<Scalar, RowsAtCompileTime, ColsAtCompileTime, ParamsAtCompileTime, F,
       Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m1(values.data() + m_rows * m_rows * idx, m_rows, m_rows); // diagonal entries
       Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m2(values.data() + (m_cols - 1) * m_rows * m_rows + m_rows * m_rows * idx, m_rows, m_rows); // off-diagonal entries
 
-      m1.noalias() = - Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>::Identity(m_rows, m_rows) - m_h(idx) * (MIRK6_beta1<Scalar>() * Ji + MIRK6J_a12<Scalar>() * J3 + MIRK6J_a20<Scalar>() * J1 + MIRK6J_a19<Scalar>() * J2) + m_h(idx) * m_h(idx) * (J3 * (- MIRK6J_a4<Scalar>() * Ji + MIRK6J_a5<Scalar>() * J3 - MIRK6J_a8<Scalar>() * J2 + m_h(idx) * (MIRK6J_a1<Scalar>() * J3 - MIRK6J_a2<Scalar>() * J2) * Ji) + J1 * (- MIRK6J_a13<Scalar>() * Ji - MIRK6J_a14<Scalar>() * J1 + MIRK6J_a8<Scalar>() * J2 + m_h(idx) * (- MIRK6J_a6<Scalar>() * J1 + MIRK6J_a2<Scalar>() * J2) * Ji) + J2 * (- MIRK6J_a9<Scalar>() * Ji + MIRK6J_a7<Scalar>() * J3 - MIRK6J_a17<Scalar>() * J1 + m_h(idx) * (MIRK6J_a3<Scalar>() * J3 - MIRK6J_a10<Scalar>() * J1) * Ji));
+      m1.noalias() = - Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>::Identity(m_rows, m_rows) - m_h(idx) * (twelfth<Scalar>() * Ji + MIRK6J_a8<Scalar>() * J3 + MIRK6J_a13<Scalar>() * J1) - m_h(idx) * m_h(idx) * (J3 * (MIRK6J_a3<Scalar>() * Ji - MIRK6J_a5<Scalar>() * J3 + MIRK6J_a6<Scalar>() * J2 - m_h(idx) * (MIRK6J_a1<Scalar>() * J3 - MIRK6J_a2<Scalar>() * J2) * Ji) + J1 * (MIRK6J_a7<Scalar>() * Ji + MIRK6J_a10<Scalar>() * J1 - MIRK6J_a6<Scalar>() * J2 + m_h(idx) * (MIRK6J_a4<Scalar>() * J1 - MIRK6J_a2<Scalar>() * J2) * Ji));
 
-      m2.noalias() = Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>::Identity(m_rows, m_rows) - m_h(idx) * (MIRK6_beta1<Scalar>() * Jip1 + MIRK6J_a20<Scalar>() * J3 + MIRK6J_a12<Scalar>() * J1 + MIRK6J_a19<Scalar>() * J2) + m_h(idx) * m_h(idx) * (J3 * (MIRK6J_a13<Scalar>() * Jip1 + MIRK6J_a14<Scalar>() * J3 - MIRK6J_a8<Scalar>() * J2 + m_h(idx) * (- MIRK6J_a6<Scalar>() * J3 + MIRK6J_a2<Scalar>() * J2) * Jip1) + J1 * (MIRK6J_a4<Scalar>() * Jip1 - MIRK6J_a5<Scalar>() * J1 + MIRK6J_a8<Scalar>() * J2 + m_h(idx) * (MIRK6J_a1<Scalar>() * J1 - MIRK6J_a2<Scalar>() * J2) * Jip1) + J2 * (MIRK6J_a9<Scalar>() * Jip1 + MIRK6J_a17<Scalar>() * J3 - MIRK6J_a7<Scalar>() * J1 + m_h(idx) * (- MIRK6J_a10<Scalar>() * J3 + MIRK6J_a3<Scalar>() * J1) * Jip1));
+      m2.noalias() = Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>::Identity(m_rows, m_rows) - m_h(idx) * (twelfth<Scalar>() * Jip1 + MIRK6J_a13<Scalar>() * J3 + MIRK6J_a8<Scalar>() * J1) + m_h(idx) * m_h(idx) * (J3 * (MIRK6J_a7<Scalar>() * Jip1 + MIRK6J_a10<Scalar>() * J3 - MIRK6J_a6<Scalar>() * J2 - m_h(idx) * (MIRK6J_a4<Scalar>() * J3 - MIRK6J_a2<Scalar>() * J2) * Jip1) + J1 * (MIRK6J_a3<Scalar>() * Jip1 - MIRK6J_a5<Scalar>() * J1 + MIRK6J_a6<Scalar>() * J2 + m_h(idx) * (MIRK6J_a1<Scalar>() * J1 - MIRK6J_a2<Scalar>() * J2) * Jip1));
     }
     if constexpr (BCsAtCompileTime == Dynamic) {
       values.segment(2 * m_rows * m_rows * (m_cols - 1), m_rows * m_rows) = dbc_dya.reshaped();
@@ -634,23 +579,22 @@ void MIRK6<Scalar, RowsAtCompileTime, ColsAtCompileTime, ParamsAtCompileTime, F,
       Map<const Matrix<Scalar, RowsAtCompileTime, ParamsAtCompileTime>> K2(df_dp_internal2.data() + m_rows * m_params * idx, m_rows, m_params);
       Map<const Matrix<Scalar, RowsAtCompileTime, ParamsAtCompileTime>> K3(df_dp_internal3.data() + m_rows * m_params * idx, m_rows, m_params);
 
-      Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime> temp1 = - MIRK6J_a6<Scalar>() * J3 + MIRK6J_a2<Scalar>() * J2;
+      Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime> temp1 = MIRK6J_a4<Scalar>() * J3 - MIRK6J_a2<Scalar>() * J2;
       Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime> temp2 = MIRK6J_a1<Scalar>() * J3 - MIRK6J_a2<Scalar>() * J2;
       Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime> temp3 = MIRK6J_a1<Scalar>() * J1 - MIRK6J_a2<Scalar>() * J2;
-      Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime> temp4 = - MIRK6J_a6<Scalar>() * J1 + MIRK6J_a2<Scalar>() * J2;
-      Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime> temp5 = - MIRK6J_a10<Scalar>() * J3 + MIRK6J_a3<Scalar>() * J1;
-      Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime> temp6 = MIRK6J_a3<Scalar>() * J3 - MIRK6J_a10<Scalar>() * J1;
+      Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime> temp4 = MIRK6J_a4<Scalar>() * J1 - MIRK6J_a2<Scalar>() * J2;
 
       Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m1(values.data() + m_rows * m_rows * idx, m_rows, m_rows); // diagonal entries
       Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m2(values.data() + (m_cols - 1) * m_rows * m_rows + m_rows * m_rows * idx, m_rows, m_rows); // off-diagonal entries
       Map<Matrix<Scalar, RowsAtCompileTime, ParamsAtCompileTime>> m3(values.data() + 2 * (m_cols - 1) * m_rows * m_rows + m_rows * m_params * idx, m_rows, m_params); // parameter entries
 
-      m1.noalias() = - Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>::Identity(m_rows, m_rows) - m_h(idx) * (MIRK6_beta1<Scalar>() * Ji + MIRK6J_a12<Scalar>() * J3 + MIRK6J_a20<Scalar>() * J1 + MIRK6J_a19<Scalar>() * J2) + m_h(idx) * m_h(idx) * (J3 * (- MIRK6J_a4<Scalar>() * Ji + MIRK6J_a5<Scalar>() * J3 - MIRK6J_a8<Scalar>() * J2 + m_h(idx) * temp2 * Ji) + J1 * (- MIRK6J_a13<Scalar>() * Ji - MIRK6J_a14<Scalar>() * J1 + MIRK6J_a8<Scalar>() * J2 + m_h(idx) * temp4 * Ji) + J2 * (- MIRK6J_a9<Scalar>() * Ji + MIRK6J_a7<Scalar>() * J3 - MIRK6J_a17<Scalar>() * J1 + m_h(idx) * temp6 * Ji));
+      m1.noalias() = - Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>::Identity(m_rows, m_rows) - m_h(idx) * (twelfth<Scalar>() * Ji + MIRK6J_a8<Scalar>() * J3 + MIRK6J_a13<Scalar>() * J1) - m_h(idx) * m_h(idx) * (J3 * (MIRK6J_a3<Scalar>() * Ji - MIRK6J_a5<Scalar>() * J3 + MIRK6J_a6<Scalar>() * J2 - m_h(idx) * temp2 * Ji) + J1 * (MIRK6J_a7<Scalar>() * Ji + MIRK6J_a10<Scalar>() * J1 - MIRK6J_a6<Scalar>() * J2 + m_h(idx) * temp4 * Ji));
 
-      m2.noalias() = Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>::Identity(m_rows, m_rows) - m_h(idx) * (MIRK6_beta1<Scalar>() * Jip1 + MIRK6J_a20<Scalar>() * J3 + MIRK6J_a12<Scalar>() * J1 + MIRK6J_a19<Scalar>() * J2) + m_h(idx) * m_h(idx) * (J3 * (MIRK6J_a13<Scalar>() * Jip1 + MIRK6J_a14<Scalar>() * J3 - MIRK6J_a8<Scalar>() * J2 + m_h(idx) * temp1 * Jip1) + J1 * (MIRK6J_a4<Scalar>() * Jip1 - MIRK6J_a5<Scalar>() * J1 + MIRK6J_a8<Scalar>() * J2 + m_h(idx) * temp3 * Jip1) + J2 * (MIRK6J_a9<Scalar>() * Jip1 + MIRK6J_a17<Scalar>() * J3 - MIRK6J_a7<Scalar>() * J1 + m_h(idx) * temp5 * Jip1));
+      m2.noalias() = Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>::Identity(m_rows, m_rows) - m_h(idx) * (twelfth<Scalar>() * Jip1 + MIRK6J_a13<Scalar>() * J3 + MIRK6J_a8<Scalar>() * J1) + m_h(idx) * m_h(idx) * (J3 * (MIRK6J_a7<Scalar>() * Jip1 + MIRK6J_a10<Scalar>() * J3 - MIRK6J_a6<Scalar>() * J2 - m_h(idx) * temp1 * Jip1) + J1 * (MIRK6J_a3<Scalar>() * Jip1 - MIRK6J_a5<Scalar>() * J1 + MIRK6J_a6<Scalar>() * J2 + m_h(idx) * temp3 * Jip1));
 
-      m3.noalias() = - m_h(idx) * (MIRK6_beta1<Scalar>() * (Kip1 + Ki) + MIRK6_beta2<Scalar>() * (K3 + K1) + MIRK6_beta3<Scalar>() * K2) + m_h(idx) * m_h(idx) * (
-        J3 * (MIRK6J_a13<Scalar>() * Kip1 - MIRK6J_a4<Scalar>() * Ki + MIRK6J_a15<Scalar>() * K3 - MIRK6J_a11<Scalar>() * K2 + m_h(idx) * (temp1 * Kip1 + temp2 * Ki)) + J1 * (MIRK6J_a4<Scalar>() * Kip1 - MIRK6J_a13<Scalar>() * Ki - MIRK6J_a15<Scalar>() * K1 + MIRK6J_a11<Scalar>() * K2 + m_h(idx) * (temp3 * Kip1 + temp4 * Ki)) + J2 * (MIRK6J_a9<Scalar>() * (Kip1 - Ki) + MIRK6J_a18<Scalar>() * (K3 - K1) + m_h(idx) * (temp5 * Kip1 + temp6 * Ki)));
+      m3.noalias() = - m_h(idx) * (twelfth<Scalar>() * (Kip1 + Ki) + MIRK6_beta1<Scalar>() * (K3 + K1)) + m_h(idx) * m_h(idx) * (
+        J3 * (MIRK6J_a7<Scalar>() * Kip1 - MIRK6J_a3<Scalar>() * Ki + MIRK6J_a12<Scalar>() * K3 - MIRK6J_a9<Scalar>() * K2 - m_h(idx) * (temp1 * Kip1 - temp2 * Ki))
+        + J1 * (MIRK6J_a3<Scalar>() * Kip1 - MIRK6J_a7<Scalar>() * Ki - MIRK6J_a12<Scalar>() * K1 + MIRK6J_a9<Scalar>() * K2 + m_h(idx) * (temp3 * Kip1 - temp4 * Ki)));
     }
     if constexpr (BCsAtCompileTime == Dynamic) {
       values.segment((2 * m_rows + m_params) * (m_cols - 1) * m_rows, m_rows * (m_rows + m_params)) = dbc_dya.reshaped();

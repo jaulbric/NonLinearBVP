@@ -25,6 +25,8 @@ using boost::math::cyl_bessel_j;
 
 int main() {
   using Real = boost::multiprecision::float128;
+  // using Real = long double;
+  constexpr Real tol = 1.0e-20;
 
   Real m = 1;
   Array<Real, 1, 1> HO_p_guess;
@@ -73,7 +75,7 @@ int main() {
   S << 0, 0, 0, -1;
 
   std::cout << "Harmonic Oscillator" << std::endl;
-  auto HO_result1 = collocation::bvp6c<Real, 2, 1>::solve(ho_fun, ho_bc, ho_fun_jac, ho_bc_jac, x, HO_y_guess, HO_p_guess, 1.0e-20, 1.0e-20, 10000);
+  auto HO_result1 = collocation::bvp6c<Real, 2, 1>::solve(ho_fun, ho_bc, ho_fun_jac, ho_bc_jac, x, HO_y_guess, HO_p_guess, tol, tol, 10000);
   // std::cout << "Found Solution:" << std::endl;
   // std::cout << HO_result1.sol(x) << std::endl;
   std::cout << "Found Eigenvalue: " << std::setprecision(std::numeric_limits<Real>::max_digits10) << HO_result1.p.value() << std::endl;
@@ -81,7 +83,7 @@ int main() {
   std::cout << std::setprecision(8) << ((HO_y_exact - HO_result1.sol(x)) / (1 + HO_result1.sol(x).abs())).matrix().colwise().stableNorm().maxCoeff() << std::endl << std::endl;
 
   std::cout << "Harmonic Oscillator estimate jacobians" << std::endl;
-  auto HO_result2 = collocation::bvp6c<Real, 2, 1>::solve(ho_fun, ho_bc, x, HO_y_guess, HO_p_guess, 1.0e-20, 1.0e-20, 10000);
+  auto HO_result2 = collocation::bvp6c<Real, 2, 1>::solve(ho_fun, ho_bc, x, HO_y_guess, HO_p_guess, tol, tol, 10000);
   // std::cout << "Found Solution:" << std::endl;
   // std::cout << std::setprecision(6) << HO_result2.sol(x) << std::endl;
   std::cout << "Found eigenvalue: " << std::setprecision(std::numeric_limits<Real>::max_digits10) << HO_result2.p.value() << std::endl;
@@ -89,7 +91,7 @@ int main() {
   std::cout << std::setprecision(8) << ((HO_y_exact - HO_result2.sol(x)) / (1 + HO_result2.sol(x).abs())).matrix().colwise().stableNorm().maxCoeff() << std::endl << std::endl;
 
   std::cout << "Harmonic Oscillator eigenvalue supplied" << std::endl;
-  auto HO_result3 = collocation::bvp6c<Real, 2, 0>::solve(ho_fun, ho_bc, ho_fun_jac, ho_bc_jac, x, HO_y_guess, 1.0e-20, 1.0e-20, 10000);
+  auto HO_result3 = collocation::bvp6c<Real, 2, 0>::solve(ho_fun, ho_bc, ho_fun_jac, ho_bc_jac, x, HO_y_guess, tol, tol, 10000);
   // std::cout << "Found Solution:" << std::endl;
   // std::cout << std::setprecision(6) << HO_result3.sol(x) << std::endl;
   std::cout << "Exact eigenvalue: " << std::setprecision(std::numeric_limits<Real>::max_digits10) << HO_p_exact.value() << std::endl;
@@ -97,7 +99,7 @@ int main() {
   std::cout << std::setprecision(8) << ((HO_y_exact - HO_result3.sol(x)) / (1 + HO_result3.sol(x).abs())).matrix().colwise().stableNorm().maxCoeff() << std::endl << std::endl;
 
   std::cout << "Harmonic Oscillator estimate jacobians eigenvalue supplied" << std::endl;
-  auto HO_result4 = collocation::bvp6c<Real, 2, 0>::solve(ho_fun, ho_bc, x, HO_y_guess, 1.0e-20, 1.0e-20, 10000);
+  auto HO_result4 = collocation::bvp6c<Real, 2, 0>::solve(ho_fun, ho_bc, x, HO_y_guess, tol, tol, 10000);
   // std::cout << "Found Solution:" << std::endl;
   // std::cout << std::setprecision(6) << HO_result4.sol(x) << std::endl;
   std::cout << "Exact eigenvalue: " << std::setprecision(std::numeric_limits<Real>::max_digits10) << HO_p_exact.value() << std::endl;
@@ -105,7 +107,7 @@ int main() {
   std::cout << std::setprecision(8) << ((HO_y_exact - HO_result4.sol(x)) / (1 + HO_result4.sol(x).abs())).matrix().colwise().stableNorm().maxCoeff() << std::endl << std::endl;
 
   std::cout << "Bessel Function" << std::endl;
-  auto Bessel_result1 = collocation::bvp6c<Real, 2, 1>::solve(bessel_fun, bessel_bc, bessel_fun_jac, bessel_bc_jac, r, Bessel_y_guess, Bessel_p_guess, S, 1.0e-20, 1.0e-20, 10000);
+  auto Bessel_result1 = collocation::bvp6c<Real, 2, 1>::solve(bessel_fun, bessel_bc, bessel_fun_jac, bessel_bc_jac, r, Bessel_y_guess, Bessel_p_guess, S, tol, tol, 10000);
   // std::cout << "Found Solution:" << std::endl;
   // std::cout << std::setprecision(6) << Bessel_result1.sol(r) << std::endl;
   std::cout << "Found eigenvalue: " << std::setprecision(std::numeric_limits<Real>::max_digits10) << Bessel_result1.p.value() << std::endl;
@@ -113,7 +115,7 @@ int main() {
   std::cout << std::setprecision(8) << ((Bessel_y_exact - Bessel_result1.sol(r)) / (1 + Bessel_result1.sol(r).abs())).matrix().colwise().stableNorm().maxCoeff() << std::endl << std::endl;
 
   std::cout << "Bessel Function estimate jacobians" << std::endl;
-  auto Bessel_result2 = collocation::bvp6c<Real, 2, 1>::solve(bessel_fun, bessel_bc, r, Bessel_y_guess, Bessel_p_guess, S, 1.0e-20, 1.0e-20, 10000);
+  auto Bessel_result2 = collocation::bvp6c<Real, 2, 1>::solve(bessel_fun, bessel_bc, r, Bessel_y_guess, Bessel_p_guess, S, tol, tol, 10000);
   // std::cout << "Found Solution:" << std::endl;
   // std::cout << std::setprecision(6) << Bessel_result2.sol(r) << std::endl;
   std::cout << "Found eigenvalue: " << std::setprecision(std::numeric_limits<Real>::max_digits10) << Bessel_result2.p.value() << std::endl;
@@ -121,7 +123,7 @@ int main() {
   std::cout << std::setprecision(8) << ((Bessel_y_exact - Bessel_result2.sol(r)) / (1 + Bessel_result2.sol(r).abs())).matrix().colwise().stableNorm().maxCoeff() << std::endl << std::endl;
 
   std::cout << "Bessel Function eigenvalue supplied" << std::endl;
-  auto Bessel_result3 = collocation::bvp6c<Real, 2, 0>::solve(bessel_fun, bessel_bc, bessel_fun_jac, bessel_bc_jac, r, Bessel_y_guess, S, 1.0e-20, 1.0e-20, 10000);
+  auto Bessel_result3 = collocation::bvp6c<Real, 2, 0>::solve(bessel_fun, bessel_bc, bessel_fun_jac, bessel_bc_jac, r, Bessel_y_guess, S, tol, tol, 10000);
   // std::cout << "Found Solution:" << std::endl;
   // std::cout << std::setprecision(8) << Bessel_result3.sol(r) << std::endl;
   // std::cout << "Exact Solution:" << std::endl;
@@ -131,7 +133,7 @@ int main() {
   std::cout << std::setprecision(8) << ((Bessel_y_exact - Bessel_result3.sol(r)) / (1 + Bessel_result3.sol(r).abs())).matrix().colwise().stableNorm().maxCoeff() << std::endl << std::endl;
 
   std::cout << "Bessel Function estimate jacobains eigenvalue supplied" << std::endl;
-  auto Bessel_result4 = collocation::bvp6c<Real, 2, 0>::solve(bessel_fun, bessel_bc, r, Bessel_y_guess, S, 1.0e-20, 1.0e-20, 10000);
+  auto Bessel_result4 = collocation::bvp6c<Real, 2, 0>::solve(bessel_fun, bessel_bc, r, Bessel_y_guess, S, tol, tol, 10000);
   // std::cout << "Found Solution:" << std::endl;
   // std::cout << std::setprecision(6) << Bessel_result4.sol(r) << std::endl;
   std::cout << "Exact eigenvalue: " << std::setprecision(std::numeric_limits<Real>::max_digits10) << Bessel_p_exact.value() << std::endl;

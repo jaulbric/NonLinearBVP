@@ -29,8 +29,6 @@ using Eigen::ArrayBase;
 using Eigen::Index;
 
 using boost::math::constants::half;
-using boost::math::constants::third;
-using boost::math::constants::sixth;
 using boost::math::constants::MIRK6_alpha;
 
 template <Index ColsAtCompileTime>
@@ -172,13 +170,13 @@ private:
   Index m_cols;
 
   Scalar m_A(const Scalar w) const {Scalar temp = w * w; return w * temp * (10 - 15 * w + 6 * temp);}
-  Scalar m_B(const Scalar w) const {Scalar temp = w * w; return half<Scalar>() * temp * (1 - w) * (1 - 4 * w + 5 * temp);}
-  Scalar m_C(const Scalar w) const {Scalar temp = 1 - w; return 49 * sixth<Scalar>() * w * w * temp * temp * (w - half<Scalar>() + MIRK6_alpha<Scalar>());}
-  Scalar m_D(const Scalar w) const {Scalar temp = 1 - w; return 8 * third<Scalar>() * w * w * temp * temp * (1 - 2 * w);}
+  Scalar m_B(const Scalar w) const {Scalar temp = w * w; return half<Scalar>() * temp * (1 - w) * (1 - 2 * w + 3 * temp);}
+  Scalar m_C(const Scalar w) const {Scalar temp = 1 - w; return 25 * half<Scalar>() * w * w * temp * temp * (w - half<Scalar>() + MIRK6_alpha<Scalar>());}
+  Scalar m_D(const Scalar w) const {Scalar temp = 1 - w; return 8 * w * w * temp * temp * (1 - 2 * w);}
   Scalar m_Aprime(const Scalar w) const {Scalar temp = 1 - w; return 30 * w * w * temp * temp;}
-  Scalar m_Bprime(const Scalar w) const {return half<Scalar>() * w * (2 + w * (-15 + (36 - 25 * w) * w));}
-  Scalar m_Cprime(const Scalar w) const {return sixth<Scalar>() * w * (w - 1) * (1 - 2 * MIRK6_alpha<Scalar>() + w * (-5 + 4 * MIRK6_alpha<Scalar>() + 5 * w));}
-  Scalar m_Dprime(const Scalar w) const {return 16 * third<Scalar>() * w * (1 - w) * (1 + 5 * (w - 1) * w);}
+  Scalar m_Bprime(const Scalar w) const {return half<Scalar>() * w * (2 + w * (5 * w * (4 - 3 * w) - 9));}
+  Scalar m_Cprime(const Scalar w) const {return 25 * half<Scalar>() * w * (w - 1) * (2 * MIRK6_alpha<Scalar>() * (2 * w - 1) + 5 * w * (w - 1) + 1);}
+  Scalar m_Dprime(const Scalar w) const {return 16 * w * (1 - w) * (5 * w * (w - 1) + 1);}
 };
 
 template <typename Derived1, typename Derived2, typename Derived3>
