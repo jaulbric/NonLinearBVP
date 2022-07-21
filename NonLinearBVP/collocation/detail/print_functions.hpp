@@ -28,36 +28,6 @@ namespace collocation { namespace detail {
 //                                        "A singular Jacobian encoutered when solving the collocation system.",
 //                                        "The solver was unable to satisfy boundary conditions tolerance on iteration 10."};
 
-std::string Termination_Messages(const BVPSolverSpace::Status status) {
-  std::string message;
-  switch (status) {
-    case BVPSolverSpace::Success : {
-      message = "The algorithm converged to the desired accuracy";
-      break;
-    }
-    case BVPSolverSpace::MaximumNodesExceeded: {
-      message = "The maximum number of mesh nodes was exceeded.";
-      break;
-    }
-    case BVPSolverSpace::SingularJacobian: {
-      message = "A singular Jacobian was encountered when solving the collocation system.";
-      break;
-    }
-    case BVPSolverSpace::TolTooSmall: {
-      message = "The solver was unable to satisfy boundary conditions on final iteration.";
-      break;
-    }
-    case BVPSolverSpace::NotMakingProgressResiduals: {
-      message = "Maximum residual did not decrease after two iterations.";
-      break;
-    }
-    default: {
-      message = "I fucked up...";
-    }
-  }
-  return message;
-}
-
 // Prints the evaluation header
 void print_iteration_header() {
   std::cout << std::setprecision(4) << std::scientific;
@@ -113,7 +83,7 @@ void print_result(const BVPSolverSpace::Status status, const int iteration, cons
       std::cout << "Maximum boundary residual: " << max_bc_res << std::endl;
       break;
     }
-    default: std::cout << "I fucked up..." << std::endl;
+    default: std::cout << "Unknown error occurred." << std::endl;
   }
   std::cout << std::resetiosflags( std::cout.flags() ) << std::setprecision(6);
 }

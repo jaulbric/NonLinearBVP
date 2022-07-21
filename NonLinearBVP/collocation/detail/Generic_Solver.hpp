@@ -29,6 +29,7 @@
 #include <Eigen/Dense>
 #include <cmath>
 #include <limits>
+#include <string>
 
 #include "NonLinearBVP/collocation/BVP_Result.hpp"
 #if COLLOCATION_SOLVER == 0
@@ -71,6 +72,36 @@ using Eigen::all;
 using boost::math::constants::half;
 using boost::math::constants::third;
 using boost::math::constants::two_thirds;
+
+std::string Termination_Messages(const BVPSolverSpace::Status status) {
+  std::string message;
+  switch (status) {
+    case BVPSolverSpace::Success : {
+      message = "The algorithm converged to the desired accuracy";
+      break;
+    }
+    case BVPSolverSpace::MaximumNodesExceeded: {
+      message = "The maximum number of mesh nodes was exceeded.";
+      break;
+    }
+    case BVPSolverSpace::SingularJacobian: {
+      message = "A singular Jacobian was encountered when solving the collocation system.";
+      break;
+    }
+    case BVPSolverSpace::TolTooSmall: {
+      message = "The solver was unable to satisfy boundary conditions on final iteration.";
+      break;
+    }
+    case BVPSolverSpace::NotMakingProgressResiduals: {
+      message = "Maximum residual did not decrease after two iterations.";
+      break;
+    }
+    default: {
+      message = "Unknown error.";
+    }
+  }
+  return message;
+}
 
 template <typename Method, bool Singular>
 class Generic_Solver {

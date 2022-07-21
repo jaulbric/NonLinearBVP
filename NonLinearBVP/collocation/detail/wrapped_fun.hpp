@@ -160,25 +160,51 @@ class BVP_wrapped_fun_jac {
       return std::make_pair(df_dy, df_dp);
     }
 # else
+    // template <typename Derived1, typename Derived2, typename Derived3>
+    // void operator()(const ArrayBase<Derived1>& x, const ArrayBase<Derived2>& y, const ArrayBase<Derived3>& p, const Tensor<Scalar, 3>& df_dy, const Tensor<Scalar, 3>& df_dp) const {
+    //   Index rows = y.rows();
+    //   Index cols = y.cols();
+    //   Index params = p.size();
+    //   assert(x.size() == cols);
+    //   m_fun_jac(x, y, p, df_dy, df_dp);
+    //   if (x(0) == m_a) {
+    //     Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m(const_cast<Tensor<Scalar, 3>&>(df_dy).data(), rows, rows);
+    //     m = m_D * m;
+    //   }
+    //   else {
+    //     Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m(const_cast<Tensor<Scalar, 3>&>(df_dy).data(), rows, rows);
+    //     m.noalias() += m_S / (x(0) - m_a);
+    //   }
+    //   for (Index idx = 1; idx < cols; ++idx) {
+    //     Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m(const_cast<Tensor<Scalar, 3>&>(df_dy).data() + rows * rows * idx);
+    //     m.noalias() += m_S / (x(idx) - m_a);
+    //   }
+    // }
+
     template <typename Derived1, typename Derived2, typename Derived3>
-    void operator()(const ArrayBase<Derived1>& x, const ArrayBase<Derived2>& y, const ArrayBase<Derived3>& p, const Tensor<Scalar, 3>& df_dy, const Tensor<Scalar, 3>& df_dp) const {
+    void operator()(const ArrayBase<Derived1>& x, const ArrayBase<Derived2>& y, const ArrayBase<Derived3>& p, Tensor<Scalar, 3>& df_dy, Tensor<Scalar, 3>& df_dp) const {
       Index rows = y.rows();
       Index cols = y.cols();
       Index params = p.size();
       assert(x.size() == cols);
       m_fun_jac(x, y, p, df_dy, df_dp);
       if (x(0) == m_a) {
-        Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m(const_cast<Tensor<Scalar, 3>&>(df_dy).data(), rows, rows);
+        Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m(df_dy.data(), rows, rows);
         m = m_D * m;
       }
       else {
-        Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m(const_cast<Tensor<Scalar, 3>&>(df_dy).data(), rows, rows);
+        Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m(df_dy.data(), rows, rows);
         m.noalias() += m_S / (x(0) - m_a);
       }
       for (Index idx = 1; idx < cols; ++idx) {
-        Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m(const_cast<Tensor<Scalar, 3>&>(df_dy).data() + rows * rows * idx);
+        Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m(df_dy.data() + rows * rows * idx);
         m.noalias() += m_S / (x(idx) - m_a);
       }
+    }
+
+    template <typename Derived1, typename Derived2, typename Derived3>
+    void operator()(const ArrayBase<Derived1>& x, const ArrayBase<Derived2>& y, const ArrayBase<Derived3>& p, const Tensor<Scalar, 3>& df_dy, const Tensor<Scalar, 3>& df_dp) const {
+      this->operator()(x, y, p, const_cast<Tensor<Scalar, 3>&>(df_dy), const_cast<Tensor<Scalar, 3>&>(df_dp));
     }
 # endif
   private:
@@ -220,25 +246,51 @@ class BVP_wrapped_fun_jac<FJ, Scalar, RowsAtCompileTime, 0> {
       return df_dy;
     }
 # else
+  // template <typename Derived1, typename Derived2>
+  // void operator()(const ArrayBase<Derived1>& x, const ArrayBase<Derived2>& y, const Tensor<Scalar, 3>& df_dy) {
+  //   Index rows = y.rows();
+  //   Index cols = y.cols();
+  //   assert(x.size() == cols);
+  //   m_fun_jac(x, y, df_dy);
+  //
+  //   if (x(0) == m_a) {
+  //     Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m(const_cast<Tensor<Scalar, 3>&>(df_dy).data(), rows, rows);
+  //     m = m_D * m;
+  //   }
+  //   else {
+  //     Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m(const_cast<Tensor<Scalar, 3>&>(df_dy).data(), rows, rows);
+  //     m.noalias() += m_S / (x(0) - m_a);
+  //   }
+  //   for (Index idx = 1; idx < cols; ++idx) {
+  //     Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m(const_cast<Tensor<Scalar, 3>&>(df_dy).data() + rows * rows * idx);
+  //     m.noalias() += m_S / (x(idx) - m_a);
+  //   }
+  // }
+
   template <typename Derived1, typename Derived2>
-  void operator()(const ArrayBase<Derived1>& x, const ArrayBase<Derived2>& y, const Tensor<Scalar, 3>& df_dy) {
+  void operator()(const ArrayBase<Derived1>& x, const ArrayBase<Derived2>& y, Tensor<Scalar, 3>& df_dy) {
     Index rows = y.rows();
     Index cols = y.cols();
     assert(x.size() == cols);
     m_fun_jac(x, y, df_dy);
 
     if (x(0) == m_a) {
-      Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m(const_cast<Tensor<Scalar, 3>&>(df_dy).data(), rows, rows);
+      Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m(df_dy.data(), rows, rows);
       m = m_D * m;
     }
     else {
-      Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m(const_cast<Tensor<Scalar, 3>&>(df_dy).data(), rows, rows);
+      Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m(df_dy.data(), rows, rows);
       m.noalias() += m_S / (x(0) - m_a);
     }
     for (Index idx = 1; idx < cols; ++idx) {
-      Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m(const_cast<Tensor<Scalar, 3>&>(df_dy).data() + rows * rows * idx);
+      Map<Matrix<Scalar, RowsAtCompileTime, RowsAtCompileTime>> m(df_dy.data() + rows * rows * idx);
       m.noalias() += m_S / (x(idx) - m_a);
     }
+  }
+
+  template <typename Derived1, typename Derived2>
+  void operator()(const ArrayBase<Derived1>& x, const ArrayBase<Derived2>& y, const Tensor<Scalar, 3>& df_dy) {
+    this->operator()(x, y, const_cast<Tensor<Scalar, 3>&>(df_dy));
   }
 # endif
   private:
