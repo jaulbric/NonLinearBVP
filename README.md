@@ -22,11 +22,11 @@ Setting optimization flags to `-O3` will also reduce runtimes substantially. Add
 
 The algorithms attempt to solve the differential system
 $$
-\frac{\mathrm{d} y}{\mathrm{d} x} = f(x, y, p),
+\frac{\mathrm{d} y}{\mathrm{d} x} = f\left(x, y, p\right),
 $$
 or in the case that a singular term is present
 $$
-\frac{\mathrm{d} y}{\mathrm{d} x} = \frac{1}{x - a} S y + f(x, y, p),
+\frac{\mathrm{d} y}{\mathrm{d} x} = \frac{1}{x - a} S y + f\left(x, y, p\right),
 $$
 on the interval $I = [a, b]$ with boundary conditions. The user must provide the algorithms with an initial mesh $x$, an initial guess of the solution on the mesh $y$, an initial guess for the unknown parameters $p$ (if present), the RHS derivative function $f$, the boundary conditions, and the sinular matrix $S$ (if present). The calling syntax is
 ```c++
@@ -80,22 +80,18 @@ $$
 \int^{x_{i + 1}}_{x_{i}} \frac{\mathrm{d} y}{\mathrm{d} x} \mathrm{d} x = y_{i + 1} - y_{i} \sim h_{i} \sum^{s}_{j = 1} a_{j} F\left(x_{i} + c_{j} h_{i}, y^{(j)}, p\right), \quad (h_{i} \to 0),
 $$
 
-where $F(x, y, p)$ is a function that returns the derivative $\mathrm{d} y / \mathrm{d} x$ at the point $x$. The solution values $y^{(1)} = y_{i}$ and $y^{(s)} = y_{i + 1}$ correspond to the solutions at the mesh nodes, while the $y^{(j)}$, with $1 < j < s$ are the solution at points internal to the mesh nodes (i.e. $c_{1} = 0$ and $c_{s} = 1$). The internal points are determined explicity from the solution values at the mesh nodes by building an interpolator with the appropriate order.
+where $F(x, y, p)$ is a function that returns the derivative $y'(x)$ at the point $x$. The solution values $y^{(1)} = y_{i}$ and $y^{(s)} = y_{i + 1}$ correspond to the solutions at the mesh nodes, while the $y^{(j)}$, with $1 < j < s$ are the solution at points internal to the mesh nodes (i.e. $c_{1} = 0$ and $c_{s} = 1$). The internal points are determined explicity from the solution values at the mesh nodes by building an interpolator with the appropriate order.
 
 If $y_{i}$ is an $n$ dimensional vector at $m$ mesh node points, and there are $k$ unknown parameters, we then seek the solution of $n m + k$ unknown variables.
 
 The algorithms then attempt to solve $n (m - 1)$ root equations
-
 $$
 y_{i + 1} - y_{i} \sim h_{i} \sum^{s}_{j = 1} a_{i j} F\left(x_{i} + c_{j} h_{i}, y^{(j)}, p\right)
 $$
-
 along with $n + k$ boundary contitions
-
 $$
 g(y_{0}, y_{m}, p) = 0,
 $$
-
 implicitly for the solution values $y_{i}$ and unknown parameters $p$. The found solution is not in fact the solution at the mesh nodes, but a $\mathrm{C}1$ continuous extension $S(x)$, such that
 
 $$
