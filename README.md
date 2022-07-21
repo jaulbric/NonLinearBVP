@@ -25,10 +25,13 @@ The algorithms attempt to solve the differential system
 $$
 \frac{\mathrm{d} y}{\mathrm{d} x} = f(x, y, p),
 $$
+
 or in the case that a singular term is present
+
 $$
 \frac{\mathrm{d} y}{\mathrm{d} x} = \frac{1}{x - a} S y + f(x, y, p),
 $$
+
 on the interval $I = [a, b]$ with boundary conditions. The user must provide the algorithms with an initial mesh $x$, an initial guess of the solution on the mesh $y$, an initial guess for the unknown parameters $p$ (if present), the RHS derivative function $f$, the boundary conditions, and the sinular matrix $S$ (if present). The calling syntax is
 ```c++
 using nonlinearBVP::collocation::bvp6c;
@@ -86,34 +89,50 @@ The calling syntax for `bvp4c` is identical to that of `bvp6c`. The return value
 ## Details
 
 The nonlinear boundary value problem is linearized by using Lobatto IIIA quadrature routines on each mesh interval:
+
 $$
 \int^{x_{i + 1}}_{x_{i}} \frac{\mathrm{d} y}{\mathrm{d} x} \mathrm{d} x = y_{i + 1} - y_{i} \sim h_{i} \sum^{s}_{j = 1} a_{j} F\left(x_{i} + c_{j} h_{i}, y^{(j)}, p\right), \quad (h_{i} \to 0),
 $$
+
 where $F(x, y, p)$ is a function that returns the derivative $\mathrm{d} y / \mathrm{d} x$ at the point $x$. The solution values $y^{(1)} = y_{i}$ and $y^{(s)} = y_{i + 1}$ correspond to the solutions at the mesh nodes, while the $y^{(j)}$, with $1 < j < s$ are the solution at points internal to the mesh nodes (i.e. $c_{1} = 0$ and $c_{s} = 1$). The internal points are determined explicity from the solution values at the mesh nodes by building an interpolator with the appropriate order.
 
 If $y_{i}$ is an $n$ dimensional vector at $m$ mesh node points, and there are $k$ unknown parameters, we then seek the solution of $n m + k$ unknown variables.
 
 The algorithms then attempt to solve $n (m - 1)$ root equations
+
 $$
 y_{i + 1} - y_{i} \sim h_{i} \sum^{s}_{j = 1} a_{i j} F\left(x_{i} + c_{j} h_{i}, y^{(j)}, p\right)
 $$
+
 along with $n + k$ boundary contitions
+
 $$
 g(y_{0}, y_{m}, p) = 0,
 $$
+
 implicitly for the solution values $y_{i}$ and unknown parameters $p$. The found solution is not in fact the solution at the mesh nodes, but a $\mathrm{C}1$ continuous extension $S(x)$, such that
+
 $$
 S'(x) = F(x, S(x), p) + r(x),
 $$
+
 where $r(x)$ is the *residual* of the continuous extension. The algorithms successfully converge if this residual is uniformly small across the mesh. In `bvp4c` we use the $L^{2}$ norm of the residual, scaled by the solution derivatives, to estimate the size of the residual on each interval. In `bvp6c` we estimate the $L^{\infty}$ norm of the scaled residual $h_{i} \vert\vert r(x) \vert\vert_{\infty}$ ($x_{i} < x < x_{i + 1}$).
 
 The algorithms exit with a successfull convergence if
-$$r_{\mathrm{scaled}} \leq a_{\mathrm{tol}} + r_{\mathrm{tol}} \vert f \vert,$$
+
+$$
+r_{\mathrm{scaled}} \leq a_{\mathrm{tol}} + r_{\mathrm{tol}} \vert f \vert,
+$$
+
 in the case of `bvp4c`, or
-$$r_{\mathrm{scaled}} \leq a_{\mathrm{tol}} + r_{\mathrm{tol}} \vert y \vert,$$
+
+$$
+r_{\mathrm{scaled}} \leq a_{\mathrm{tol}} + r_{\mathrm{tol}} \vert y \vert,
+$$
+
 in the case of `bvp6c`, on each mesh interval.
 
-Besides the fact that the two algorithms are of different orders (the global error in `bvp4c` is $O(h^{4})$ while in `bvp6c` it is $O(h^{6})$), the main difference between the two algorithms is that in `bvp4c`, although the error should be small if the scaled residual is also small, the global error is not directly controlled. In `bvp6c` we use a superconvergence result to bound the global error by the scaled residual, so the global error is directly controlled. Care should be taken when using `bvp4c` because the scaled residual can not be interpreted as a measure of the error.
+Besides the fact that the two algorithms are of different orders (the global error in `bvp4c` is $O(h^{4})$ while in `bvp6c` it is $O(h^{6})$ ), the main difference between the two algorithms is that in `bvp4c`, although the error should be small if the scaled residual is also small, the global error is not directly controlled. In `bvp6c` we use a superconvergence result to bound the global error by the scaled residual, so the global error is directly controlled. Care should be taken when using `bvp4c` because the scaled residual can not be interpreted as a measure of the error.
 
 After each iteration the mesh is redistributed. If the scaled residual exceeds the tolerance in any mesh interval a node is added at the midpoint (or two nodes are added, splitting the interval into thirds, if the scaled residual is very large). If the scaled residual is less than the tolerances than the algorithms attempt to remove a mesh node by estimating the new scaled residuals with the mesh node removed. The mesh node is removed if the estimate of the new scaled residuals are less than half the required tolerance. The removal of a mesh node is only done if we can merged three adjacent mesh intervals into two mesh intervals, essentially replacing the two internal mesh nodes with one and placing the new mesh node at an estimate of the optimum position.
 
@@ -278,4 +297,4 @@ Max absolute error: 4.163336342344337e-16
 ```
 On a 64-bit MacBook Air with four 1.30Ghz Intel Core i5-42500 CPUs it takes 7 milliseconds for the algorithms to converge to the above tolerances.
 
-One final note is that the collocation algorithms can also be made to output their progress to varying degrees by defining the macro `COLLOCATION_VERBOSITY` to be in integer from 0 to 2 before including the NonLinearBVP header files. 0 (default) prints nothing, 1 prints the final results, and 2 will print progress updates during each iteration. 
+One final note is that the collocation algorithms can also be made to output their progress to varying degrees by defining the macro `COLLOCATION_VERBOSITY` to be in integer from 0 to 2 before including the NonLinearBVP header files. 0 (default) prints nothing, 1 prints the final results, and 2 will print progress updates during each iteration.
