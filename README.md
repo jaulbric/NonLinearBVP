@@ -76,7 +76,7 @@ The calling syntax for `bvp4c` is identical to that of `bvp6c`. The return value
 
 The nonlinear boundary value problem is linearized by using Lobatto IIIA quadrature routines on each mesh interval:
 
-$$\int^{x_{i + 1}}_{x_{i}} \frac{\mathrm{d} y}{\mathrm{d} x} \mathrm{d} x = y_{i + 1} - y_{i} \sim h_{i} \sum^{s}_{j = 1} a_{j} F\left(x_{i} + c_{j} h_{i}, y^{(j)}, p\right), \quad (h_{i} \to 0),$$
+$$\int_{x_{i}}^{x_{i + 1}} \frac{\mathrm{d} y}{\mathrm{d} x} \mathrm{d} x = y_{i + 1} - y_{i} \sim h_{i} \sum_{j = 1}^{s} a_{j} F\left(x_{i} + c_{j} h_{i}, y^{(j)}, p\right), \quad (h_{i} \to 0),$$
 
 where $F(x, y, p)$ is a function that returns the derivative $y'(x)$ at the point $x$. The solution values $y^{(1)} = y_{i}$ and $y^{(s)} = y_{i + 1}$ correspond to the solutions at the mesh nodes, while the $y^{(j)}$, with $1 < j < s$ are the solution at points internal to the mesh nodes (i.e. $c_{1} = 0$ and $c_{s} = 1$). The internal points are determined explicity from the solution values at the mesh nodes by building an interpolator with the appropriate order.
 
