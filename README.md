@@ -3,12 +3,14 @@ A set of C++ routines for the numerical solution of nonlinear boundary values pr
 
 Requirements:
 1. C++17
-2. Boost $\geq$ 1.79
+2. Boost $\geq$ 1.72
 3. Eigen $\geq$ 3.4
 
 Similar to MatLab's bvp4c and Scipy's solve_bvp. There is a 4th order method and a 6th order method, accessed as static methods of the bvp4c and bvp6c class. The routines use a Powell hybrid dogleg method to approximately solve monoimplicit Runge Kutta formula, controlling the residual (and in the case of bvp6c, the true error) of a continuous extension of the MIRK formula.
 
 bvp4c indirectly solves a 3-point Lobatto IIIA formula, although the internal point is approximated using a cubic spline interpolator. bvp6c directly solves a 5-point Lobatto IIIA formula, using 3 internal points (one at the interval midpoint and the other two the Lobatto IIIA internal points).
+
+This project was built and tested with Boost 1.72 and Eigen 3.4. It may work with earlier versions, but it is not guaranteed.
 
 ## Installation
 
