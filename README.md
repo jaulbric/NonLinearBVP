@@ -130,21 +130,15 @@ After each iteration the mesh is redistributed. If the scaled residual exceeds t
 
 As an example we will solve Bessel's equation on the interval $I = [0, 1]$. Bessel's equation with order $\nu = 0$ is
 
-$$
-- u'' - \frac{1}{r} u' + u = p u.
-$$
+$$- u'' - \frac{1}{r} u' + u = p u.$$
 
 The general solution is
 
-$$
-u(r) = a J_{0}(\sqrt{p - 1} r) + b Y_{0}(\sqrt{p - 1} r).
-$$
+$$u(r) = a J_{0}(\sqrt{p - 1} r) + b Y_{0}(\sqrt{p - 1} r).$$
 
 We first need to transform this into a first order system with
 
-$$
-y_{1}(r) = u(r), \quad y_{2}(r) = \frac{\mathrm{d} u(r)}{\mathrm{d} r}, \quad y(r) = \left(\begin{array}{c} y_{1}(r) \\ y_{2}(r) \end{array}\right).
-$$
+$$y_{1}(r) = u(r), \quad y_{2}(r) = \frac{\mathrm{d} u(r)}{\mathrm{d} r}, \quad y(r) = \left(\begin{array}{c} y_{1}(r) \\ y_{2}(r) \end{array}\right).$$
 
 The first order system is then
 
