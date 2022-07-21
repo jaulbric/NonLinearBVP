@@ -126,7 +126,7 @@ $$y_{1}(r) = u(r), \quad y_{2}(r) = \frac{\mathrm{d} u(r)}{\mathrm{d} r}, \quad 
 
 The first order system is then
 
-$$\frac{\mathrm{d} y}{\mathrm{d} r} = \left(\begin{array}{c} y_{2} \\ - \frac{1}{r} y_{2} + \left(1 - p\right) y_{1} \end{array} \right)$$
+$$\frac{\mathrm{d} y}{\mathrm{d} r} = \left\lbrack \matrix{y_{2} \cr - \frac{1}{r} y_{2} + \left(1 - p\right) y_{1} } \right\rbrack$$
 
 For boundary conditions we choose $y_{1}(1) = 0$ and $y_{2}(0) = 0$. These boundary conditions require $b = 0$ and $\sqrt{p - 1} = j_{0, k}$, where $j_{\nu, k}$ is the $k^{\text{th}}$ zero of the Bessel function of the first kind. The arbitrary constant $a$ cannot yet be determined, so we need to include another boundary condition, which we arbitrary choose to be $y_{1}(0) = 1$.
 
@@ -203,11 +203,11 @@ Our choice of boundary conditions don't depend on the eigenvalue $p$ at all, so 
 
 Now we come to the singular term. In the first order system we have
 
-$$\frac{1}{r} \left(\begin{array}{cc} 0 & 0 \\ 0 & - 1 \end{array} \right) \left( \begin{array}{c} y_{1}(r) \\ y_{2}(r) \end{array} \right) = - \frac{1}{r} \left(\begin{array}{c} 0 \\ y_{2}(r) \end{array} \right).$$
+$$\frac{1}{r} \left\lbrack  \matrix{0 & 0 \cr 0 & - 1} \right\rbrack \left\lbrack \matrix{y_{1}(r) \cr y_{2}(r)} \right\rbrack = - \frac{1}{r} \left\lbrack \matrix{0 \cr y_{2}(r)} \right\rbrack.$$
 
 Thus, the singular term is defined by the matrix
 
-$$S = \left(\begin{array}{cc} 0 & 0 \\ 0 & -1 \end{array} \right).$$
+$$S = \left\lbrack \matrix{0 & 0 \cr 0 & -1} \right\rbrack.$$
 
 In order for the solution to be regular at the origin (which we assume will always be the case) we must have $S y(0) = 0$, therefore
 
@@ -277,7 +277,7 @@ One final note is that the collocation algorithms can also be made to output the
 ```c++
 #define COLLOCATION_VERBOSITY 2
 ```
-before including an NonLinearBVP headers the following is printed during execution
+the following is printed during execution
 ```
 ------------------------------------------------------------------------------------------
 | Iteration | Max residual | Max BC residual | Total nodes | Nodes added | Nodes Removed |
