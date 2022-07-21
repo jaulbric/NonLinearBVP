@@ -273,7 +273,7 @@ Max absolute error: 4.163336342344337e-16
 ```
 On a 64-bit MacBook Air with four 1.30Ghz Intel Core i5-42500 CPUs it takes 7 milliseconds for the algorithms to converge to the above tolerances with a total of 115 mesh nodes using compiler flags `-O3`, `-DNDEBUG`, `-march=native`, and `-fopenmp`.
 
-One final note is that the collocation algorithms can also be made to output their progress to varying degrees by defining the macro `COLLOCATION_VERBOSITY` to be in integer from 0 to 2 before including the NonLinearBVP header files. 0 (default) prints nothing, 1 prints the final results, and 2 will print progress updates during each iteration. By including the following line
+One final note is that the collocation algorithms can also be made to output their progress to varying degrees by defining the macro `COLLOCATION_VERBOSITY` to be an integer from 0 to 2 before including the NonLinearBVP header files. 0 (default) prints nothing, 1 prints the final results, and 2 will print progress updates during each iteration. By including the following line
 ```c++
 #define COLLOCATION_VERBOSITY 2
 ```
