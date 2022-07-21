@@ -22,15 +22,11 @@ Setting optimization flags to `-O3` will also reduce runtimes substantially. Add
 
 The algorithms attempt to solve the differential system
 
-$$
-\frac{\mathrm{d} y}{\mathrm{d} x} = f \left( x, y, p \right) ,
-$$
+$$\frac{\mathrm{d} y}{\mathrm{d} x} = f \left( x, y, p \right) ,$$
 
 or in the case that a singular term is present
 
-$$
-\frac{\mathrm{d} y}{\mathrm{d} x} = \frac{1}{x - a} S y + f \left( x, y, p \right) ,
-$$
+$$\frac{\mathrm{d} y}{\mathrm{d} x} = \frac{1}{x - a} S y + f \left( x, y, p \right) ,$$
 
 on the interval $I = [a, b]$ with boundary conditions. The user must provide the algorithms with an initial mesh $x$, an initial guess of the solution on the mesh $y$, an initial guess for the unknown parameters $p$ (if present), the RHS derivative function $f$, the boundary conditions, and the singular matrix $S$ (if present). The calling syntax is
 ```c++
@@ -80,9 +76,7 @@ The calling syntax for `bvp4c` is identical to that of `bvp6c`. The return value
 
 The nonlinear boundary value problem is linearized by using Lobatto IIIA quadrature routines on each mesh interval:
 
-$$
-\int^{x_{i + 1}}_{x_{i}} \frac{\mathrm{d} y}{\mathrm{d} x} \mathrm{d} x = y_{i + 1} - y_{i} \sim h_{i} \sum^{s}_{j = 1} a_{j} F\left(x_{i} + c_{j} h_{i}, y^{(j)}, p\right), \quad (h_{i} \to 0),
-$$
+$$\int^{x_{i + 1}}_{x_{i}} \frac{\mathrm{d} y}{\mathrm{d} x} \mathrm{d} x = y_{i + 1} - y_{i} \sim h_{i} \sum^{s}_{j = 1} a_{j} F\left(x_{i} + c_{j} h_{i}, y^{(j)}, p\right), \quad (h_{i} \to 0),$$
 
 where $F(x, y, p)$ is a function that returns the derivative $y'(x)$ at the point $x$. The solution values $y^{(1)} = y_{i}$ and $y^{(s)} = y_{i + 1}$ correspond to the solutions at the mesh nodes, while the $y^{(j)}$, with $1 < j < s$ are the solution at points internal to the mesh nodes (i.e. $c_{1} = 0$ and $c_{s} = 1$). The internal points are determined explicity from the solution values at the mesh nodes by building an interpolator with the appropriate order.
 
@@ -90,35 +84,25 @@ If $y_{i}$ is an $n$ dimensional vector at $m$ mesh node points, and there are $
 
 The algorithms then attempt to solve $n (m - 1)$ root equations
 
-$$
-y_{i + 1} - y_{i} \sim h_{i} \sum^{s}_{j = 1} a_{j} F \left( x_{i} + c_{j} h_{i}, y^{(j)}, p \right)
-$$
+$$y_{i + 1} - y_{i} \sim h_{i} \sum^{s}_{j = 1} a_{j} F \left( x_{i} + c_{j} h_{i}, y^{(j)}, p \right)$$
 
 along with $n + k$ boundary contitions
 
-$$
-g(y_{0}, y_{m}, p) = 0,
-$$
+$$g(y_{0}, y_{m}, p) = 0,$$
 
 implicitly for the solution values $y_{i}$ and unknown parameters $p$. The found solution is not in fact the solution at the mesh nodes, but a $\mathrm{C}1$ continuous extension $S(x)$, such that
 
-$$
-S'(x) = F(x, S(x), p) + r(x),
-$$
+$$S'(x) = F(x, S(x), p) + r(x),$$
 
 where $r(x)$ is the *residual* of the continuous extension. The algorithms successfully converge if this residual is uniformly small across the mesh. In `bvp4c` we use the $L^{2}$ norm of the residual, scaled by the solution derivatives, to estimate the size of the residual on each interval. In `bvp6c` we estimate the $L^{\infty}$ norm of the scaled residual $h_{i} \vert\vert r(x) \vert\vert_{\infty}$ ($x_{i} < x < x_{i + 1}$).
 
 The algorithms exit with a successfull convergence if
 
-$$
-r_{\mathrm{scaled}} \leq a_{\mathrm{tol}} + r_{\mathrm{tol}} \vert f \vert,
-$$
+$$r_{\mathrm{scaled}} \leq a_{\mathrm{tol}} + r_{\mathrm{tol}} \vert f \vert,$$
 
 in the case of `bvp4c`, or
 
-$$
-r_{\mathrm{scaled}} \leq a_{\mathrm{tol}} + r_{\mathrm{tol}} \vert y \vert,
-$$
+$$r_{\mathrm{scaled}} \leq a_{\mathrm{tol}} + r_{\mathrm{tol}} \vert y \vert,$$
 
 in the case of `bvp6c`, on each mesh interval.
 
@@ -142,9 +126,7 @@ $$y_{1}(r) = u(r), \quad y_{2}(r) = \frac{\mathrm{d} u(r)}{\mathrm{d} r}, \quad 
 
 The first order system is then
 
-$$
-\frac{\mathrm{d} y}{\mathrm{d} r} = \left(\begin{array}{c} y_{2} \\ - \frac{1}{r} y_{2} + \left(1 - p\right) y_{1} \end{array} \right)
-$$
+$$\frac{\mathrm{d} y}{\mathrm{d} r} = \left(\begin{array}{c} y_{2} \\ - \frac{1}{r} y_{2} + \left(1 - p\right) y_{1} \end{array} \right)$$
 
 For boundary conditions we choose $y_{1}(1) = 0$ and $y_{2}(0) = 0$. These boundary conditions require $b = 0$ and $\sqrt{p - 1} = j_{0, k}$, where $j_{\nu, k}$ is the $k^{\text{th}}$ zero of the Bessel function of the first kind. The arbitrary constant $a$ cannot yet be determined, so we need to include another boundary condition, which we arbitrary choose to be $y_{1}(0) = 1$.
 
@@ -221,21 +203,15 @@ Our choice of boundary conditions don't depend on the eigenvalue $p$ at all, so 
 
 Now we come to the singular term. In the first order system we have
 
-$$
-\frac{1}{r} \left(\begin{array}{cc} 0 & 0 \\ 0 & - 1 \end{array} \right) \left( \begin{array}{c} y_{1}(r) \\ y_{2}(r) \end{array} \right) = - \frac{1}{r} \left(\begin{array}{c} 0 \\ y_{2}(r) \end{array} \right).
-$$
+$$\frac{1}{r} \left(\begin{array}{cc} 0 & 0 \\ 0 & - 1 \end{array} \right) \left( \begin{array}{c} y_{1}(r) \\ y_{2}(r) \end{array} \right) = - \frac{1}{r} \left(\begin{array}{c} 0 \\ y_{2}(r) \end{array} \right).$$
 
 Thus, the singular term is defined by the matrix
 
-$$
-S = \left(\begin{array}{cc} 0 & 0 \\ 0 & -1 \end{array} \right).
-$$
+$$S = \left(\begin{array}{cc} 0 & 0 \\ 0 & -1 \end{array} \right).$$
 
 In order for the solution to be regular at the origin (which we assume will always be the case) we must have $S y(0) = 0$, therefore
 
-$$
-\lim_{r \to 0} \frac{1}{r} S y(r) = S y'(0).
-$$
+$$\lim_{r \to 0} \frac{1}{r} S y(r) = S y'(0).$$
 
 Internally the algorithms treat the above as an additional boundary condition, and adjust the solution so that this boundary condition is always exactly satisfied. All the user needs to do is to input the matrix $S$:
 ```c++
