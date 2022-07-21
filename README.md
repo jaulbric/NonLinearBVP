@@ -21,17 +21,13 @@ Setting optimization flags to `-O3` will also reduce runtimes substantially. Add
 ## Usage
 
 The algorithms attempt to solve the differential system
-
 $$
 \frac{\mathrm{d} y}{\mathrm{d} x} = f(x, y, p),
 $$
-
 or in the case that a singular term is present
-
 $$
 \frac{\mathrm{d} y}{\mathrm{d} x} = \frac{1}{x - a} S y + f(x, y, p),
 $$
-
 on the interval $I = [a, b]$ with boundary conditions. The user must provide the algorithms with an initial mesh $x$, an initial guess of the solution on the mesh $y$, an initial guess for the unknown parameters $p$ (if present), the RHS derivative function $f$, the boundary conditions, and the sinular matrix $S$ (if present). The calling syntax is
 ```c++
 using nonlinearBVP::collocation::bvp6c;
@@ -75,16 +71,6 @@ The calling syntax for `bvp4c` is identical to that of `bvp6c`. The return value
 | `status` | `int` | An integer which indicates the reason that the algorithm stopped. <ol><li>The algorithm successfully converged</li><li>The maximum number of mesh nodes was exceeded</li><li>A singular Jacobian was encountered</li><li>The algorithm was not able to satisfy the desired tolerances after 10 interations</li><li>The algorithm did not make progress on reducing the residual</li></ol> |
 | `message` | `std::string` | A human readable message detailing the reason the algorithm stopped. |
 | `success` | `bool` | `true` if the algorithm successfully converged, otherwise `false`. |
-
-[^1]: User defined types can also be used, such as `boost::multiprecision::float128`. One needs to configure Eigen in order to be able to use such types, but for `boost::multiprecision` types this is done with a simple include: `#include <boost/multiprecision/eigen.hpp>`.
-
-[^2]: The calling syntax can be changed to `dydx = fun(x, y, p)` (or `dydx = fun(x, y)` if no unknown parameters are present) by defining the macro `#define COLLOCATION_FUNCTION_RETURN` before including `collocation.hpp`.
-
-[^3]: The calling syntax can be changed to `bc_res = bc(ya, yb, p)` (or `bc_res = bc(ya, yb)` if no unknown parameters are present) by defining the macro `#define COLLOCATION_BC_RETURN` before including `collocation.hpp`.
-
-[^4]: The calling syntax can be changed to `std::tie(dfdy, dfdp) = fun_jac(x, y, p)` (or `dfdy = fun_jac(x, y)` if no unknown parameters are present) by defining the macro `#define COLLOCATION_FUNCTION_JACOBIAN_RETURN` before including `collocation.hpp`.
-
-[^5]: The calling syntax can be changed to `std::tie(dbc_dya, dbc_dyb, dbc_dp) = bc_jac(ya, yb, p)` (or `std::tie(dbc_dya, dbc_dyb) = bc_jac(ya, yb, p)` if no unknown parameters are present) by defining the macro `#define COLLOCATION_BC_JACOBIAN_RETURN` before including `collocation.hpp`.
 
 ## Details
 
@@ -298,3 +284,13 @@ Max absolute error: 4.163336342344337e-16
 On a 64-bit MacBook Air with four 1.30Ghz Intel Core i5-42500 CPUs it takes 7 milliseconds for the algorithms to converge to the above tolerances.
 
 One final note is that the collocation algorithms can also be made to output their progress to varying degrees by defining the macro `COLLOCATION_VERBOSITY` to be in integer from 0 to 2 before including the NonLinearBVP header files. 0 (default) prints nothing, 1 prints the final results, and 2 will print progress updates during each iteration.
+
+[^1]: User defined types can also be used, such as `boost::multiprecision::float128`. One needs to configure Eigen in order to be able to use such types, but for `boost::multiprecision` types this is done with a simple include: `#include <boost/multiprecision/eigen.hpp>`.
+
+[^2]: The calling syntax can be changed to `dydx = fun(x, y, p)` (or `dydx = fun(x, y)` if no unknown parameters are present) by defining the macro `#define COLLOCATION_FUNCTION_RETURN` before including `collocation.hpp`.
+
+[^3]: The calling syntax can be changed to `bc_res = bc(ya, yb, p)` (or `bc_res = bc(ya, yb)` if no unknown parameters are present) by defining the macro `#define COLLOCATION_BC_RETURN` before including `collocation.hpp`.
+
+[^4]: The calling syntax can be changed to `std::tie(dfdy, dfdp) = fun_jac(x, y, p)` (or `dfdy = fun_jac(x, y)` if no unknown parameters are present) by defining the macro `#define COLLOCATION_FUNCTION_JACOBIAN_RETURN` before including `collocation.hpp`.
+
+[^5]: The calling syntax can be changed to `std::tie(dbc_dya, dbc_dyb, dbc_dp) = bc_jac(ya, yb, p)` (or `std::tie(dbc_dya, dbc_dyb) = bc_jac(ya, yb, p)` if no unknown parameters are present) by defining the macro `#define COLLOCATION_BC_JACOBIAN_RETURN` before including `collocation.hpp`.
