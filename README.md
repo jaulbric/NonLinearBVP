@@ -32,7 +32,7 @@ $$
 \frac{\mathrm{d} y}{\mathrm{d} x} = \frac{1}{x - a} S y + f \left( x, y, p \right) ,
 $$
 
-on the interval $I = [a, b]$ with boundary conditions. The user must provide the algorithms with an initial mesh $x$, an initial guess of the solution on the mesh $y$, an initial guess for the unknown parameters $p$ (if present), the RHS derivative function $f$, the boundary conditions, and the sinular matrix $S$ (if present). The calling syntax is
+on the interval $I = [a, b]$ with boundary conditions. The user must provide the algorithms with an initial mesh $x$, an initial guess of the solution on the mesh $y$, an initial guess for the unknown parameters $p$ (if present), the RHS derivative function $f$, the boundary conditions, and the singular matrix $S$ (if present). The calling syntax is
 ```c++
 using nonlinearBVP::collocation::bvp6c;
 auto sol = bvp6c<Scalar, RowsAtCompileTime, ParamsAtCompileTime>::solve(fun, bc, fun_jac, bc_jac, x, y, p, S, a_tol, r_tol, bc_tol, max_nodes);
@@ -91,7 +91,7 @@ If $y_{i}$ is an $n$ dimensional vector at $m$ mesh node points, and there are $
 The algorithms then attempt to solve $n (m - 1)$ root equations
 
 $$
-y_{i + 1} - y_{i} \sim h_{i} \sum^{s}_{j = 1} a_{i j} F \left( x_{i} + c_{j} h_{i}, y^{(j)}, p \right)
+y_{i + 1} - y_{i} \sim h_{i} \sum^{s}_{j = 1} a_{j} F \left( x_{i} + c_{j} h_{i}, y^{(j)}, p \right)
 $$
 
 along with $n + k$ boundary contitions
@@ -129,19 +129,29 @@ After each iteration the mesh is redistributed. If the scaled residual exceeds t
 ## Example
 
 As an example we will solve Bessel's equation on the interval $I = [0, 1]$. Bessel's equation with order $\nu = 0$ is
+
 $$
 - u'' - \frac{1}{r} u' + u = p u.
 $$
+
 The general solution is
-$$u(r) = a J_{0}(\sqrt{p - 1} r) + b Y_{0}(\sqrt{p - 1} r).$$
+
+$$
+u(r) = a J_{0}(\sqrt{p - 1} r) + b Y_{0}(\sqrt{p - 1} r).
+$$
+
 We first need to transform this into a first order system with
+
 $$
 y_{1}(r) = u(r), \quad y_{2}(r) = \frac{\mathrm{d} u(r)}{\mathrm{d} r}, \quad y(r) = \left(\begin{array}{c} y_{1}(r) \\ y_{2}(r) \end{array}\right).
 $$
+
 The first order system is then
+
 $$
 \frac{\mathrm{d} y}{\mathrm{d} r} = \left(\begin{array}{c} y_{2} \\ - \frac{1}{r} y_{2} + \left(1 - p\right) y_{1} \end{array} \right)
 $$
+
 For boundary conditions we choose $y_{1}(1) = 0$ and $y_{2}(0) = 0$. These boundary conditions require $b = 0$ and $\sqrt{p - 1} = j_{0, k}$, where $j_{\nu, k}$ is the $k^{\text{th}}$ zero of the Bessel function of the first kind. The arbitrary constant $a$ cannot yet be determined, so we need to include another boundary condition, which we arbitrary choose to be $y_{1}(0) = 1$.
 
 The derivatives, boundary conditions, and jacobians should be functors with an `operator()` method. For our problem the derivative functor can be written as
@@ -216,17 +226,23 @@ struct Bessel_bc_jac {
 Our choice of boundary conditions don't depend on the eigenvalue $p$ at all, so the partial derivate with respect to $p$ is just set to 0.
 
 Now we come to the singular term. In the first order system we have
+
 $$
 \frac{1}{r} \left(\begin{array}{cc} 0 & 0 \\ 0 & - 1 \end{array} \right) \left( \begin{array}{c} y_{1}(r) \\ y_{2}(r) \end{array} \right) = - \frac{1}{r} \left(\begin{array}{c} 0 \\ y_{2}(r) \end{array} \right).
 $$
+
 Thus, the singular term is defined by the matrix
+
 $$
 S = \left(\begin{array}{cc} 0 & 0 \\ 0 & -1 \end{array} \right).
 $$
+
 In order for the solution to be regular at the origin (which we assume will always be the case) we must have $S y(0) = 0$, therefore
+
 $$
 \lim_{r \to 0} \frac{1}{r} S y(r) = S y'(0).
 $$
+
 Internally the algorithms treat the above as an additional boundary condition, and adjust the solution so that this boundary condition is always exactly satisfied. All the user needs to do is to input the matrix $S$:
 ```c++
 Matrix<double, 2, 2> S;
