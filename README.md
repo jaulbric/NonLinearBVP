@@ -3,8 +3,8 @@ A set of C++ routines for the numerical solution of nonlinear boundary values pr
 
 Requirements:
 1. C++17
-2. Boost 1.79
-3. Eigen 3.4
+2. Boost $\geq$ 1.79
+3. Eigen $\geq$ 3.4
 
 Similar to MatLab's bvp4c and Scipy's solve_bvp. There is a 4th order method and a 6th order method, accessed as static methods of the bvp4c and bvp6c class. The routines use a Powell hybrid dogleg method to approximately solve monoimplicit Runge Kutta formula, controlling the residual (and in the case of bvp6c, the true error) of a continuous extension of the MIRK formula.
 
@@ -84,7 +84,7 @@ If $y_{i}$ is an $n$ dimensional vector at $m$ mesh node points, and there are $
 
 The algorithms then attempt to solve $n (m - 1)$ root equations
 
-$$y_{i + 1} - y_{i} \sim h_{i} \sum^{s}_{j = 1} a_{j} F \left( x_{i} + c_{j} h_{i}, y^{(j)}, p \right)$$
+$$y_{i + 1} - y_{i} \sim h_{i} \sum_{j = 1}^{s} a_{j} F \left( x_{i} + c_{j} h_{i}, y^{(j)}, p \right)$$
 
 along with $n + k$ boundary contitions
 
@@ -122,7 +122,7 @@ $$u(r) = a J_{0}(\sqrt{p - 1} r) + b Y_{0}(\sqrt{p - 1} r).$$
 
 We first need to transform this into a first order system with
 
-$$y_{1}(r) = u(r), \quad y_{2}(r) = \frac{\mathrm{d} u(r)}{\mathrm{d} r}, \quad y(r) = \left(\begin{array}{c} y_{1}(r) \\ y_{2}(r) \end{array}\right).$$
+$$y_{1}(r) = u(r), \quad y_{2}(r) = \frac{\mathrm{d} u(r)}{\mathrm{d} r}, \quad y(r) = \left\lbrack \matrix{ y_{1}(r) \cr y_{2}(r)} \right\rbrack.$$
 
 The first order system is then
 
@@ -262,7 +262,7 @@ std::cout << "Exact eigenvalue  : " << p_exact << std::endl;
 
 // Print the maximum error
 Array<double, 2, Eigen::Dynamic> err(2, sol.x.size());
-err = y_exact - sol.y;
+err = (y_exact - sol.y).abs();
 std::cout << "Max absolute error: " << err.maxCoeff() << std::endl;
 ```
 This prints
@@ -271,9 +271,35 @@ Found eigenvalue  : 6.783185962946785
 Exact eigenvalue  : 6.783185962946785
 Max absolute error: 4.163336342344337e-16
 ```
-On a 64-bit MacBook Air with four 1.30Ghz Intel Core i5-42500 CPUs it takes 7 milliseconds for the algorithms to converge to the above tolerances.
+On a 64-bit MacBook Air with four 1.30Ghz Intel Core i5-42500 CPUs it takes 7 milliseconds for the algorithms to converge to the above tolerances with a total of 115 mesh nodes using compiler flags `-O3`, `-DNDEBUG`, `-march=native`, and `-fopenmp`.
 
-One final note is that the collocation algorithms can also be made to output their progress to varying degrees by defining the macro `COLLOCATION_VERBOSITY` to be in integer from 0 to 2 before including the NonLinearBVP header files. 0 (default) prints nothing, 1 prints the final results, and 2 will print progress updates during each iteration.
+One final note is that the collocation algorithms can also be made to output their progress to varying degrees by defining the macro `COLLOCATION_VERBOSITY` to be in integer from 0 to 2 before including the NonLinearBVP header files. 0 (default) prints nothing, 1 prints the final results, and 2 will print progress updates during each iteration. By including the following line
+```c++
+#define COLLOCATION_VERBOSITY 2
+```
+before including an NonLinearBVP headers the following is printed during execution
+```
+------------------------------------------------------------------------------------------
+| Iteration | Max residual | Max BC residual | Total nodes | Nodes added | Nodes Removed |
+------------------------------------------------------------------------------------------
+|         1 |   6.1477e-07 |      0.0000e+00 |          28 |          18 |             0 |
+------------------------------------------------------------------------------------------
+|         2 |   2.5471e-09 |      0.0000e+00 |          57 |          29 |             0 |
+------------------------------------------------------------------------------------------
+|         3 |   1.0490e-11 |      0.0000e+00 |         114 |          57 |             0 |
+------------------------------------------------------------------------------------------
+|         4 |   4.3168e-14 |      0.0000e+00 |         115 |           1 |             0 |
+------------------------------------------------------------------------------------------
+|         5 |   1.3496e-15 |      3.2710e-20 |         115 |           1 |             1 |
+------------------------------------------------------------------------------------------
+|         6 |   5.1079e-16 |      4.9439e-19 |         115 |           0 |             0 |
+------------------------------------------------------------------------------------------
+Solved in 6 iterations, number of nodes 115.
+Maximum relative residual: 3.72976748410058036e-16
+Maximum boundary residual: 4.94385825177990584e-19
+
+```
+The full version of this example can be found at [test/bessel.cpp](test/bessel.cpp).
 
 [^1]: User defined types can also be used, such as `boost::multiprecision::float128`. One needs to configure Eigen in order to be able to use such types, but for `boost::multiprecision` types this is done with a simple include: `#include <boost/multiprecision/eigen.hpp>`.
 

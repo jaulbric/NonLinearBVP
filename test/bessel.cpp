@@ -107,7 +107,7 @@ int main() {
   }
 
   Array<Scalar, 2, Eigen::Dynamic> err(2, sol.x.size());
-  err = y_exact - sol.y;
+  err = (y_exact - sol.y).abs();
   std::cout << "Max absolute error: " << err.maxCoeff() << std::endl;
 
   std::cout << "Time to solve problem: " << duration.count() << " milliseconds." << std::endl;
